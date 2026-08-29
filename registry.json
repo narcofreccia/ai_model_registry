@@ -421,7 +421,10 @@
       "provider": "google",
       "kind": "image_gen",
       "api_model_id": "gemini-3-pro-image",
-      "aliases": ["google/nano-banana-pro", "gemini-3-pro-image-preview"],
+      "aliases": [
+        "google/nano-banana-pro",
+        "gemini-3-pro-image-preview"
+      ],
       "reasoning": "none",
       "allows_temperature": false,
       "responses_api": false,
@@ -440,7 +443,10 @@
       "provider": "google",
       "kind": "image_gen",
       "api_model_id": "gemini-3.1-flash-image",
-      "aliases": ["google/nano-banana", "gemini-2.5-flash-image"],
+      "aliases": [
+        "google/nano-banana",
+        "gemini-2.5-flash-image"
+      ],
       "reasoning": "none",
       "allows_temperature": false,
       "responses_api": false,
@@ -459,7 +465,9 @@
       "provider": "openai",
       "kind": "image_gen",
       "api_model_id": "gpt-image-2",
-      "aliases": ["openai/gpt-image-2"],
+      "aliases": [
+        "openai/gpt-image-2"
+      ],
       "reasoning": "none",
       "allows_temperature": false,
       "responses_api": false,
@@ -583,7 +591,7 @@
       "api_model_id": "gpt-5.5",
       "aliases": [],
       "reasoning": "openai_effort",
-      "allows_temperature": true,
+      "allows_temperature": false,
       "responses_api": true,
       "server_web_tools": false,
       "vision": true,
