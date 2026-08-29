@@ -1,0 +1,210 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/narcofreccia/ai_model_registry/stable/schema/registry.schema.json",
+  "title": "AI Model Registry",
+  "description": "Facts-only catalog of AI models: ids, providers, capabilities, current USD list prices, lifecycle status and id migrations. Contains no behavior (request settings, prompts, routing) — consumers own that.",
+  "type": "object",
+  "required": ["schema_version", "generated_at", "providers", "models", "migrations"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Incremented only for breaking changes to this schema."
+    },
+    "generated_at": {
+      "type": "string",
+      "description": "ISO-8601 UTC timestamp of the last edit to registry.json."
+    },
+    "providers": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": { "$ref": "#/$defs/provider" },
+      "description": "Provider key -> provider facts. Model.provider must reference a key here."
+    },
+    "models": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/model" },
+      "description": "Ordered list. The order is part of the contract: consumers may render it verbatim."
+    },
+    "migrations": {
+      "type": "object",
+      "additionalProperties": { "type": "string" },
+      "description": "Stale/retired model id -> successor id. Resolved by chaining until stable (cycle-safe); the final target must be a model id."
+    }
+  },
+  "$defs": {
+    "provider": {
+      "type": "object",
+      "required": ["name", "base_url", "key_env", "pydantic_ai_prefix"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string", "description": "Human-readable provider name." },
+        "base_url": {
+          "type": ["string", "null"],
+          "description": "OpenAI-compatible endpoint base URL, or null when the provider is reached through its native pydantic-ai prefix."
+        },
+        "key_env": {
+          "type": ["string", "null"],
+          "description": "Environment variable holding the API key; null for providers needing no key (local)."
+        },
+        "pydantic_ai_prefix": {
+          "type": ["string", "null"],
+          "description": "pydantic-ai provider prefix (\"anthropic:model\"); null for a plain OpenAI-compatible endpoint reached via base_url."
+        }
+      }
+    },
+    "model": {
+      "type": "object",
+      "required": [
+        "id", "name", "description", "provider", "kind", "api_model_id", "aliases",
+        "reasoning", "allows_temperature", "responses_api", "server_web_tools",
+        "vision", "needs_pdf_rasterization", "max_reference_images", "voices",
+        "status", "pricing"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Registry-wide unique id. This is the string consumers store and pass around."
+        },
+        "name": { "type": "string", "description": "Display name." },
+        "description": { "type": "string", "description": "Short human-facing blurb." },
+        "provider": { "type": "string", "description": "Key into the providers map." },
+        "kind": {
+          "enum": ["chat", "realtime", "embedding", "image_gen"],
+          "description": "What the model does."
+        },
+        "api_model_id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "The exact string sent to the provider API (may differ from id, e.g. a dated snapshot id)."
+        },
+        "aliases": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true,
+          "description": "Other names that resolve to this model without a migration (equivalent naming, not a successor relationship)."
+        },
+        "reasoning": {
+          "enum": [
+            "adaptive", "anthropic_budget", "openai_effort", "google_budget",
+            "openrouter_reasoning", "glm_thinking", "none"
+          ],
+          "description": "How the model exposes reasoning depth. Consumers must degrade unknown future values to \"none\"."
+        },
+        "allows_temperature": {
+          "type": "boolean",
+          "description": "False -> the API rejects temperature/top_p/top_k with a 400."
+        },
+        "responses_api": {
+          "type": "boolean",
+          "description": "True -> the model requires OpenAI's Responses API endpoint rather than Chat Completions."
+        },
+        "server_web_tools": {
+          "type": "boolean",
+          "description": "True -> provider-side web_search/web_fetch tools are available."
+        },
+        "vision": { "type": "boolean", "description": "Accepts image input." },
+        "needs_pdf_rasterization": {
+          "type": "boolean",
+          "description": "True -> the model cannot ingest PDFs natively; pages must be rasterized to images first."
+        },
+        "max_reference_images": {
+          "type": ["integer", "null"],
+          "minimum": 0,
+          "description": "Image models: how many reference images the API accepts. Null when not applicable."
+        },
+        "voices": {
+          "type": ["array", "null"],
+          "items": { "type": "string" },
+          "description": "Realtime/audio models: available voice ids. Null when not applicable."
+        },
+        "status": {
+          "enum": ["active", "deprecated", "retired"],
+          "description": "Lifecycle. Deprecated/retired ids stay in the registry so old saved ids keep resolving; pair them with a migration."
+        },
+        "pricing": {
+          "oneOf": [
+            { "$ref": "#/$defs/token_pricing" },
+            { "$ref": "#/$defs/image_pricing" },
+            { "type": "null" }
+          ],
+          "description": "CURRENT USD list price only. Null when no verified price is known — never guess. Git history is the price audit trail; this file never carries historical rates."
+        }
+      }
+    },
+    "token_pricing": {
+      "type": "object",
+      "required": ["input_per_1m", "output_per_1m"],
+      "additionalProperties": false,
+      "properties": {
+        "input_per_1m": { "type": "number", "minimum": 0, "description": "USD per 1M input tokens." },
+        "output_per_1m": { "type": "number", "minimum": 0, "description": "USD per 1M output tokens." },
+        "cached_input_per_1m": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "description": "USD per 1M cached input tokens; null when the provider publishes no cached rate."
+        },
+        "effective_from": {
+          "type": "string",
+          "format": "date",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+          "description": "Optional ISO date on which the current price took effect."
+        },
+        "variants": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/token_pricing_variant" },
+          "description": "Optional conditional rates (off-peak, batch, long-context...). Consumers MUST ignore variant conditions they do not recognise and fall back to the base rate."
+        }
+      }
+    },
+    "token_pricing_variant": {
+      "type": "object",
+      "required": ["condition"],
+      "additionalProperties": false,
+      "properties": {
+        "condition": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Open vocabulary, e.g. \"off_peak\", \"long_context_gt_200k\", \"batch\", \"audio\". Unknown values must be ignored, not rejected."
+        },
+        "input_per_1m": { "type": ["number", "null"], "minimum": 0 },
+        "output_per_1m": { "type": ["number", "null"], "minimum": 0 },
+        "cached_input_per_1m": { "type": ["number", "null"], "minimum": 0 },
+        "note": { "type": "string", "description": "Free-text clarification of when the condition applies." }
+      }
+    },
+    "image_pricing": {
+      "type": "object",
+      "required": ["per_image"],
+      "additionalProperties": false,
+      "properties": {
+        "per_image": { "type": "number", "minimum": 0, "description": "USD per generated image." },
+        "effective_from": {
+          "type": "string",
+          "format": "date",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+          "description": "Optional ISO date on which the current price took effect."
+        },
+        "variants": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/image_pricing_variant" },
+          "description": "Optional conditional per-image rates (quality tier, resolution...). Unknown conditions must be ignored."
+        }
+      }
+    },
+    "image_pricing_variant": {
+      "type": "object",
+      "required": ["condition"],
+      "additionalProperties": false,
+      "properties": {
+        "condition": { "type": "string", "minLength": 1 },
+        "per_image": { "type": ["number", "null"], "minimum": 0 },
+        "note": { "type": "string" }
+      }
+    }
+  }
+}
