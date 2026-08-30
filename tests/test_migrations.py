@@ -73,3 +73,17 @@ def test_resolution_is_cycle_safe():
     registry = Registry.model_validate(data)
     # terminates instead of spinning forever
     assert registry.resolve_migration("x") in {"x", "y"}
+
+
+def test_tide_reel_legacy_ids_resolve(registry):
+    """Every model id TideReel can hold in settings/.env exists in the registry
+    (added 2026-08-30), so no consumer has to keep a hand-written id table."""
+    for model_id in (
+        "gpt-5.4-pro", "gpt-5.3", "gpt-5.2", "gpt-5.2-pro", "o4-mini",
+        "claude-opus-4-7", "claude-opus-4-5", "claude-opus-4-1", "claude-opus-4",
+        "claude-sonnet-3-7", "claude-haiku-3-5", "text-embedding-ada-002",
+    ):
+        model = registry.get(model_id)
+        assert model is not None, model_id
+        assert model.status == "deprecated", model_id
+        assert registry.resolve(model_id).status == "active", model_id

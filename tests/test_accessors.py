@@ -38,7 +38,7 @@ def test_active_chat_models_keep_tide_share_order(registry):
 def test_models_by_kind_and_provider(registry):
     by_kind = registry.models_by_kind()
     assert set(by_kind) == {"chat", "embedding", "image_gen"}
-    assert len(registry.models_by_kind("embedding")) == 4
+    assert len(registry.models_by_kind("embedding")) == 5
     assert [m.id for m in registry.models_by_provider("zai")] == ["glm-5.3-flash"]
     assert "anthropic" in registry.models_by_provider()
 

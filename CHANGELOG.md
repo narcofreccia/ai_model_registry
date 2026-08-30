@@ -2,6 +2,42 @@
 
 Dates are the promotion date (when `stable` was moved), not the merge date.
 
+## 2026-08-30 — tide_reel coverage (v0.2.1)
+
+63 models (50 chat, 5 embedding, 8 image_gen), 61 migrations, 6 providers. Additive only:
+no existing model's facts changed. `schema_version` stays 1.
+
+**Why** — `tide_reel` (TideReel desktop editor) adopted the registry; its hand-written
+alias/mapping tables carried 12 ids the registry did not know, which would have made them
+resolve as "unknown" and silently reprice/reroute. All 12 are now deprecated entries with
+migrations, so every id a TideReel install can hold resolves to a live successor.
+
+**Source** — `tide_reel/tidereel/models.py` (`anthropic_mappings`, `openai_mappings`,
+`_LEGACY_REASONING_OPENAI_IDS`, `EMBEDDING_MODELS`) as of `8db34cc`.
+
+**Added — chat** (id → migration)
+
+- `gpt-5.4-pro` → `gpt-5.6-sol` — Responses API, openai_effort
+- `gpt-5.3` → `gpt-5.4`, `gpt-5.2` → `gpt-5.4`, `gpt-5.2-pro` → `gpt-5.5` (migrations for
+  the last two pre-existed; the model entries did not)
+- `o4-mini` → `gpt-5.6-luna` — rejects temperature, Responses API
+- `claude-opus-4-7` → `claude-opus-4-8` (adaptive thinking, no temperature)
+- `claude-opus-4-5`, `claude-opus-4-1`, `claude-opus-4` → `claude-opus-4-8` (token budget)
+- `claude-sonnet-3-7` → `claude-sonnet-5` (api id `claude-3-7-sonnet-20250219`)
+- `claude-haiku-3-5` → `claude-haiku-4-5` (api id `claude-3-5-haiku-20241022`, no reasoning)
+
+**Added — embedding**
+
+- `text-embedding-ada-002` → `text-embedding-3-small` (dimension-compatible successor)
+
+**Pricing** — all 12 land unpriced (`pricing: null`). TODO: backfill list prices for the
+legacy OpenAI/Anthropic tiers from a provider price page; none was quoted by the source repo.
+
+**Note on dated api ids** — TideReel pins dated snapshot ids for some models
+(`gpt-5.1-2025-11-13`, `claude-opus-4-5-20251101`, …). Those stay an app-local policy
+overlay in `tidereel/models.py`; the registry keeps the undated canonical `api_model_id`
+so other consumers are unaffected.
+
 ## 2026-08-29 — tide_backend coverage + price backfill (v0.2.0)
 
 51 models (39 chat, 4 embedding, 8 image_gen), 52 migrations, 6 providers. Additive only:
