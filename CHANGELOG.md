@@ -2,6 +2,76 @@
 
 Dates are the promotion date (when `stable` was moved), not the merge date.
 
+## 2026-08-30 — the `realtime` kind (v0.3.0, schema 1.1)
+
+73 models (50 chat, 5 embedding, 8 image_gen, **10 realtime**), 66 migrations, 6 providers.
+Additive only: no existing model's facts changed, and `models_by_kind("chat")`,
+`("embedding")` and `("image_gen")` are byte-identical to the previous `stable`.
+
+**Why** — tide-voice-agent's model facts were quadruplicated (its `model_factory.py`
+defaults + voice sets, its admin dropdown, its usage tracker's fallback pair, and
+tide_backend's 10 "registry-excluded" realtime pricing literals). Registry-excluded is no
+longer true: realtime models now live here like every other kind.
+
+**Schema — additive, `schema_minor: 1`**
+
+- `kind` gains `"realtime"` (the enum already listed it; nothing used it).
+- New `pricing` shape `realtime_pricing`: `audio_input_per_1m`, `audio_output_per_1m`,
+  `text_input_per_1m`, `text_output_per_1m`, `cached_input_per_1m`, plus optional
+  `cached_audio_input_per_1m`. USD per 1M tokens, like every other rate here. Audio and
+  text bill on separate axes, so the chat shape cannot express these models.
+- New optional model field `modalities` (session modality tokens, spelled as the provider
+  wants them). `voices` already existed and is now mandatory-non-empty for realtime.
+- New optional top-level `schema_minor` — the MINOR counter for additive changes.
+  `schema_version` stays the MAJOR integer `1` **on purpose**: adapters (this one included)
+  type it as `int`, so a fractional `1.1` would have stopped every already-pinned consumer
+  from loading a refreshed snapshot. Older adapters ignore `schema_minor` and `modalities`
+  outright (`extra="ignore"`).
+
+**Adapter** — `Pricing` gains the four realtime rate fields, `cached_audio_input_per_1m`
+and an `is_realtime` property; `Model` gains `modalities`; `RegistryData` gains
+`schema_minor` (defaults to 0). Every field stays optional, so old snapshots load unchanged
+and a consumer reading only the chat axis sees `None`, never an error.
+
+**Added — realtime** (id → migration; rates USD per 1M)
+
+| id | status | audio in/out | text in/out | cached in |
+|---|---|---|---|---|
+| `gpt-realtime-2.1` | active | 32 / 64 | 4 / 24 | 0.40 |
+| `gpt-realtime-2` → `gpt-realtime-2.1` | deprecated | 32 / 64 | 4 / 24 | 0.40 |
+| `gpt-realtime-1.5` → `gpt-realtime-2` | deprecated | 32 / 64 | 4 / 16 | 0.40 |
+| `gpt-audio-1.5` | active | 32 / 64 | 4 / 16 | 0.40 |
+| `gpt-4o-realtime-preview` → `gpt-realtime-2.1` | deprecated | 40 / 80 | 2.50 / 10 | 2.50 |
+| `gpt-4o-mini-realtime-preview` → `gpt-realtime-2.1` | deprecated | 10 / 20 | 0.15 / 0.60 | 0.30 |
+| `gemini-3.1-flash-live-preview` | active | 3 / 12 | 0.75 / 4.50 | 3 |
+| `gemini-live-2.5-flash-native-audio` | active | 3 / 12 | 0.50 / 2 | 3 |
+| `gemini-2.5-flash-native-audio-preview-12-2025` | active | 3 / 12 | 0.50 / 2 | 3 |
+| `gemini-2.5-flash-native-audio-preview-09-2025` → `-12-2025` | deprecated | 3 / 12 | 0.50 / 2 | 3 |
+
+`gpt-realtime-1.5` migrates through `gpt-realtime-2` to `gpt-realtime-2.1`; both stay
+**deprecated, not retired** — house rule: deprecated ids remain callable verbatim.
+
+**Source of the prices** — tide_backend `app/ai_token_ledger/seed_pricing.py`'s realtime
+literal rows (`*_usd_per_1m`, verified against the OpenAI and Google pricing pages on the
+dates noted in that file), copied 1:1: that file was rescaled to per-1M in migration
+`airates1m01`, so it already publishes the unit this registry uses — no conversion. Google
+Live has no cache discount (context caching is "Not available" on the Live API); the seeder
+sets cached input to the full audio input rate and that is what is recorded here. No rate
+the seeder lacks was invented: `cached_audio_input_per_1m` is absent everywhere.
+
+**Voices / modalities** — copied verbatim from tide-voice-agent `agent/model_factory.py`
+(OpenAI's 12, Google's 30) and its realtime-session calls (`["text","audio"]` /
+`["AUDIO"]`).
+
+**Careful, billers** — `get_price(id)` applies migrations, so it returns the *successor's*
+rates for a deprecated id (`get_price("gpt-realtime-1.5")` gives Realtime 2.1's $24 text
+output, not its own $16). A biller charging a deprecated id verbatim must read
+`registry.get(id).pricing`. Pre-existing behavior, newly consequential now that deprecated
+realtime ids stay selectable.
+
+**Validation** — `validate.py` gains the realtime invariants: voices non-empty, pricing on
+the realtime axes only, and no audio/text rate keys on a non-realtime model.
+
 ## 2026-08-30 — tide_reel coverage (v0.2.1)
 
 63 models (50 chat, 5 embedding, 8 image_gen), 61 migrations, 6 providers. Additive only:

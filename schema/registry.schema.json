@@ -10,7 +10,12 @@
     "schema_version": {
       "type": "integer",
       "minimum": 1,
-      "description": "Incremented only for breaking changes to this schema."
+      "description": "MAJOR. Incremented only for breaking changes to this schema."
+    },
+    "schema_minor": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "MINOR revision within the current major: incremented for additive changes (a new kind, a new optional field, a new pricing shape) that older consumers can ignore. Optional and absent means 0. It is deliberately a separate key rather than a fractional schema_version so adapters typing schema_version as an integer keep loading newer registries."
     },
     "generated_at": {
       "type": "string",
@@ -122,6 +127,11 @@
           "items": { "type": "string" },
           "description": "Realtime/audio models: available voice ids. Null when not applicable."
         },
+        "modalities": {
+          "type": ["array", "null"],
+          "items": { "type": "string" },
+          "description": "Realtime/audio models: the modality tokens the provider's realtime session accepts, spelled exactly as the API wants them (OpenAI [\"text\",\"audio\"], Google Live [\"AUDIO\"]). Optional; null/absent when not applicable."
+        },
         "status": {
           "enum": ["active", "deprecated", "retired"],
           "description": "Lifecycle. Deprecated/retired ids stay in the registry so old saved ids keep resolving; pair them with a migration."
@@ -130,6 +140,7 @@
           "oneOf": [
             { "$ref": "#/$defs/token_pricing" },
             { "$ref": "#/$defs/image_pricing" },
+            { "$ref": "#/$defs/realtime_pricing" },
             { "type": "null" }
           ],
           "description": "CURRENT USD list price only. Null when no verified price is known — never guess. Git history is the price audit trail; this file never carries historical rates."
@@ -175,6 +186,37 @@
         "output_per_1m": { "type": ["number", "null"], "minimum": 0 },
         "cached_input_per_1m": { "type": ["number", "null"], "minimum": 0 },
         "note": { "type": "string", "description": "Free-text clarification of when the condition applies." }
+      }
+    },
+    "realtime_pricing": {
+      "type": "object",
+      "required": [
+        "audio_input_per_1m", "audio_output_per_1m",
+        "text_input_per_1m", "text_output_per_1m", "cached_input_per_1m"
+      ],
+      "additionalProperties": false,
+      "description": "Realtime/audio models bill audio and text tokens on separate axes. All rates are USD per 1M tokens; a rate the provider does not publish is null, never guessed.",
+      "properties": {
+        "audio_input_per_1m": { "type": ["number", "null"], "minimum": 0, "description": "USD per 1M audio input tokens." },
+        "audio_output_per_1m": { "type": ["number", "null"], "minimum": 0, "description": "USD per 1M audio output tokens." },
+        "text_input_per_1m": { "type": ["number", "null"], "minimum": 0, "description": "USD per 1M text input tokens." },
+        "text_output_per_1m": { "type": ["number", "null"], "minimum": 0, "description": "USD per 1M text output tokens." },
+        "cached_input_per_1m": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "description": "USD per 1M cached input tokens. OpenAI publishes one absolute rate covering both axes; null when the provider publishes none."
+        },
+        "cached_audio_input_per_1m": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "description": "Optional: USD per 1M cached AUDIO input tokens, when the provider prices it apart from cached text input. Absent/null means cached_input_per_1m covers both."
+        },
+        "effective_from": {
+          "type": "string",
+          "format": "date",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+          "description": "Optional ISO date on which the current rates took effect."
+        }
       }
     },
     "image_pricing": {

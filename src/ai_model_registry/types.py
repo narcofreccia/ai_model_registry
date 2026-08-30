@@ -63,17 +63,42 @@ class PricingVariant(_Frozen):
 class Pricing(_Frozen):
     """CURRENT USD list price. Historical rates live in git history, not here.
 
-    Token models populate ``input_per_1m``/``output_per_1m``; image models
-    populate ``per_image``. ``variants`` is optional and defaults to empty, so
-    a consumer reading only the base fields is never affected by it.
+    Three shapes share this model, one per model kind:
+
+    * token (chat/embedding) — ``input_per_1m`` / ``output_per_1m``
+    * image — ``per_image``
+    * realtime — ``audio_input_per_1m`` / ``audio_output_per_1m`` /
+      ``text_input_per_1m`` / ``text_output_per_1m``, since audio and text
+      tokens bill on separate axes
+
+    ``cached_input_per_1m`` is shared by the token and realtime shapes.
+    ``variants`` is optional and defaults to empty, so a consumer reading only
+    the base fields is never affected by it. Every field is optional: an
+    unpublished rate is None, never a guess.
     """
 
     input_per_1m: float | None = None
     output_per_1m: float | None = None
     cached_input_per_1m: float | None = None
     per_image: float | None = None
+    # Realtime/audio axis (kind == "realtime").
+    audio_input_per_1m: float | None = None
+    audio_output_per_1m: float | None = None
+    text_input_per_1m: float | None = None
+    text_output_per_1m: float | None = None
+    cached_audio_input_per_1m: float | None = None
     effective_from: str | None = None
     variants: tuple[PricingVariant, ...] = ()
+
+    @property
+    def is_realtime(self) -> bool:
+        """True when this carries the realtime (audio + text) rate axes."""
+        return (
+            self.audio_input_per_1m is not None
+            or self.audio_output_per_1m is not None
+            or self.text_input_per_1m is not None
+            or self.text_output_per_1m is not None
+        )
 
     def variant(self, condition: str) -> PricingVariant | None:
         """The variant for ``condition``, or None when it is not published."""
@@ -101,6 +126,7 @@ class Model(_Frozen):
     needs_pdf_rasterization: bool = False
     max_reference_images: int | None = None
     voices: tuple[str, ...] | None = None
+    modalities: tuple[str, ...] | None = None
     status: Status = "active"
     pricing: Pricing | None = None
 
@@ -128,6 +154,7 @@ class RegistryData(_Frozen):
     """The whole registry document. ``accessors.Registry`` adds the lookups."""
 
     schema_version: int
+    schema_minor: int = 0
     generated_at: str
     providers: dict[str, Provider] = Field(default_factory=dict)
     models: tuple[Model, ...] = ()

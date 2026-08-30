@@ -11,6 +11,7 @@ Before every push: `python3 scripts/validate.py` (green = no failures).
    `id`, `name`, `description`, `provider`, `kind`, `api_model_id`, `aliases`,
    `reasoning`, `allows_temperature`, `responses_api`, `server_web_tools`, `vision`,
    `needs_pdf_rasterization`, `max_reference_images`, `voices`, `status`, `pricing`.
+   `modalities` is optional (realtime models only; `null` elsewhere).
 2. `provider` must be a key in `providers`; add the provider first if it's new.
 3. `id` is what consumers store. `api_model_id` is what goes on the wire (differs for
    dated snapshot ids). Old names for the *same* model go in `aliases`; names of a
@@ -31,6 +32,33 @@ Before every push: `python3 scripts/validate.py` (green = no failures).
   add it to `pricing.variants` as `{"condition": "...", <rate keys>, "note": "..."}`.
   Conditions are an open vocabulary; consumers ignore ones they don't know.
 - A cached-input rate that always applies belongs in base `cached_input_per_1m`, not a variant.
+
+## Add a realtime model
+
+`kind: "realtime"` (speech-to-speech / audio models). On top of the fields above:
+
+1. `voices` must be a **non-empty** list — validation fails otherwise; copy the provider's
+   voice set verbatim (OpenAI's 12, Google Live's 30).
+2. `modalities` = the session modality tokens spelled as the API wants them:
+   `["text","audio"]` for OpenAI realtime, `["AUDIO"]` for Google Live.
+3. Pricing uses the **realtime shape** — `audio_input_per_1m`, `audio_output_per_1m`,
+   `text_input_per_1m`, `text_output_per_1m`, `cached_input_per_1m` (all USD per 1M
+   tokens), plus `cached_audio_input_per_1m` only when the provider prices cached audio
+   apart from cached text. Mixing in `input_per_1m` / `per_image` fails validation, and so
+   does putting the audio/text keys on a non-realtime model. A rate the provider does not
+   publish is `null` — never derived from a sibling model.
+4. Preview-dated ids (`…-preview-09-2025`) churn: when a newer date lands, deprecate the
+   old id and add the migration rather than editing it in place.
+
+## Extend the schema
+
+Additive changes (a new kind, a new optional field, a new pricing shape) bump
+**`schema_minor`**, not `schema_version`. `schema_version` is the MAJOR and moves only for
+a change that stops older consumers loading the file. `schema_minor` is a separate integer
+key precisely so adapters that type `schema_version` as an `int` keep working — never turn
+`schema_version` into a fractional number. Before promoting an additive change, load the
+new `registry.json` through the **`stable`** adapter and confirm the older kinds' output is
+byte-identical.
 - One `CHANGELOG.md` line per price change: model, old → new, source.
 
 ## Deprecate or retire a model

@@ -62,6 +62,13 @@ class Registry(RegistryData):
     def get_price(self, model_id: str) -> Pricing | None:
         """The model's CURRENT base USD list price, or None when unknown.
 
+        The shape follows the model's kind: token models fill
+        ``input_per_1m``/``output_per_1m``, image models ``per_image``, and
+        realtime models the audio/text axes (``audio_input_per_1m``,
+        ``audio_output_per_1m``, ``text_input_per_1m``, ``text_output_per_1m``
+        — ``Pricing.is_realtime`` tells them apart). Unread fields are None, so
+        a caller that only knows one shape is unaffected by the others.
+
         Conditional rates (off-peak, batch, ...) hang off ``Pricing.variants``;
         this returns the base price unchanged.
         """

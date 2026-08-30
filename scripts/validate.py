@@ -129,7 +129,54 @@ def check_lifecycle(registry: dict) -> None:
 
 
 # ---------------------------------------------------------------------------
-# 6. diff vs the published `stable` registry
+# 6. realtime models: pricing shape + voices
+# ---------------------------------------------------------------------------
+# Rate keys only the realtime shape has. `cached_input_per_1m` is deliberately
+# absent: the chat shape carries it too.
+_REALTIME_RATE_KEYS = {
+    "audio_input_per_1m",
+    "audio_output_per_1m",
+    "text_input_per_1m",
+    "text_output_per_1m",
+    "cached_audio_input_per_1m",
+}
+_TOKEN_RATE_KEYS = {"input_per_1m", "output_per_1m"}
+
+
+def check_realtime(registry: dict) -> None:
+    for model in registry.get("models", []):
+        model_id = model.get("id")
+        is_realtime = model.get("kind") == "realtime"
+        pricing = model.get("pricing") or {}
+        keys = set(pricing)
+
+        if is_realtime:
+            voices = model.get("voices")
+            if not voices:
+                fail(
+                    f"realtime model {model_id!r} has no voices — every realtime "
+                    f"model must list the voice ids callers can pick"
+                )
+            if pricing and not (keys & _REALTIME_RATE_KEYS):
+                fail(
+                    f"realtime model {model_id!r} is priced on the chat/image axis "
+                    f"({sorted(keys)}) — use the realtime shape (audio_*/text_* per 1M)"
+                )
+            if keys & _TOKEN_RATE_KEYS or "per_image" in keys:
+                fail(
+                    f"realtime model {model_id!r} mixes chat/image rate keys into "
+                    f"realtime pricing: {sorted(keys & (_TOKEN_RATE_KEYS | {'per_image'}))}"
+                )
+        elif keys & _REALTIME_RATE_KEYS:
+            fail(
+                f"model {model_id!r} (kind {model.get('kind')!r}) carries realtime "
+                f"rate keys {sorted(keys & _REALTIME_RATE_KEYS)} — only kind "
+                f"'realtime' prices the audio/text axes"
+            )
+
+
+# ---------------------------------------------------------------------------
+# 7. diff vs the published `stable` registry
 # ---------------------------------------------------------------------------
 def check_against_stable(registry: dict) -> None:
     try:
@@ -177,6 +224,7 @@ def main() -> int:
     check_providers(registry)
     check_migrations(registry)
     check_lifecycle(registry)
+    check_realtime(registry)
     check_against_stable(registry)
 
     for note in notes:

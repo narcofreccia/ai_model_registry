@@ -71,8 +71,27 @@ raised, as long as a fallback remains. Only a total failure of all four raises.
 | `.models_by_kind(kind=None)` / `.models_by_provider(p=None)` | list, or dict of all |
 | `.get_price(id)` | current base `Pricing`, or `None` when unpriced |
 
+### Model kinds and their pricing shapes
+
+| `kind` | pricing fields |
+|---|---|
+| `chat`, `embedding` | `input_per_1m`, `output_per_1m`, `cached_input_per_1m` |
+| `image_gen` | `per_image` |
+| `realtime` | `audio_input_per_1m`, `audio_output_per_1m`, `text_input_per_1m`, `text_output_per_1m`, `cached_input_per_1m` (+ optional `cached_audio_input_per_1m`) |
+
+`Pricing` is one Python class with every field optional, so reading the wrong shape yields
+`None`, never an exception; `Pricing.is_realtime` tells the realtime shape apart. Realtime
+models also carry `voices` (the voice ids the provider accepts) and `modalities` (the
+session modality tokens, spelled as the API wants them: OpenAI `["text","audio"]`, Google
+Live `["AUDIO"]`).
+
 ### Rules consumers must follow
 
+- **Ignore model kinds you don't handle.** New kinds are added additively (`realtime`
+  arrived in schema 1.1); filter by the kinds you know instead of rejecting the rest.
+- **`get_price(id)` migrates first.** For a deprecated-but-still-callable id, that returns
+  the *successor's* rates. A biller charging that id verbatim must read
+  `registry.get(id).pricing` instead.
 - **Ignore unknown `pricing.variants[].condition` values.** The vocabulary is open
   (`off_peak`, `batch`, `long_context_gt_200k`, …); a new condition must never break you.
   Fall back to the base rate when you don't recognise one.

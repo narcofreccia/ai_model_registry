@@ -37,7 +37,7 @@ def test_active_chat_models_keep_tide_share_order(registry):
 
 def test_models_by_kind_and_provider(registry):
     by_kind = registry.models_by_kind()
-    assert set(by_kind) == {"chat", "embedding", "image_gen"}
+    assert set(by_kind) == {"chat", "embedding", "image_gen", "realtime"}
     assert len(registry.models_by_kind("embedding")) == 5
     assert [m.id for m in registry.models_by_provider("zai")] == ["glm-5.3-flash"]
     assert "anthropic" in registry.models_by_provider()
@@ -122,3 +122,91 @@ def test_variants_load_and_do_not_disturb_base_readers(registry):
     assert len(price.variants) == 2
     assert price.variant("off_peak").input_per_1m == 0.5
     assert price.variant("batch") is None
+
+
+# --- realtime kind ---------------------------------------------------------
+REALTIME_IDS = [
+    "gpt-realtime-2.1",
+    "gpt-realtime-2",
+    "gpt-realtime-1.5",
+    "gpt-audio-1.5",
+    "gpt-4o-realtime-preview",
+    "gpt-4o-mini-realtime-preview",
+    "gemini-3.1-flash-live-preview",
+    "gemini-live-2.5-flash-native-audio",
+    "gemini-2.5-flash-native-audio-preview-12-2025",
+    "gemini-2.5-flash-native-audio-preview-09-2025",
+]
+
+
+def test_realtime_models_are_all_present(registry):
+    assert [m.id for m in registry.models_by_kind("realtime")] == REALTIME_IDS
+
+
+def test_realtime_models_carry_voices_and_modalities(registry):
+    for model_id in REALTIME_IDS:
+        model = registry.get(model_id)
+        assert model.voices, f"{model_id} has no voices"
+        assert model.modalities, f"{model_id} has no modalities"
+    openai_model = registry.get("gpt-realtime-2.1")
+    assert len(openai_model.voices) == 12
+    assert "coral" in openai_model.voices
+    assert openai_model.modalities == ("text", "audio")
+    google_model = registry.get("gemini-3.1-flash-live-preview")
+    assert len(google_model.voices) == 30
+    assert "Puck" in google_model.voices
+    assert google_model.modalities == ("AUDIO",)
+
+
+def test_realtime_pricing_reads_on_the_audio_text_axes(registry):
+    price = registry.get_price("gpt-realtime-2.1")
+    assert price.is_realtime
+    assert (price.audio_input_per_1m, price.audio_output_per_1m) == (32.0, 64.0)
+    assert (price.text_input_per_1m, price.text_output_per_1m) == (4.0, 24.0)
+    assert price.cached_input_per_1m == 0.4
+    assert price.cached_audio_input_per_1m is None
+    # the chat axis stays empty, so a chat-only reader sees "no price" fields
+    assert (price.input_per_1m, price.output_per_1m, price.per_image) == (None, None, None)
+
+
+def test_chat_pricing_is_not_flagged_realtime(registry):
+    assert registry.get_price("claude-opus-5").is_realtime is False
+
+
+def test_realtime_migrations_chain_to_the_flagship(registry):
+    assert registry.resolve_migration("gpt-realtime-1.5") == "gpt-realtime-2.1"
+    assert registry.resolve_migration("gpt-4o-realtime-preview") == "gpt-realtime-2.1"
+    assert registry.resolve_migration("gpt-4o-mini-realtime-preview") == "gpt-realtime-2.1"
+    assert (
+        registry.resolve_migration("gemini-2.5-flash-native-audio-preview-09-2025")
+        == "gemini-2.5-flash-native-audio-preview-12-2025"
+    )
+
+
+def test_deprecated_realtime_ids_stay_callable_verbatim(registry):
+    """House rule: deprecated = still callable. The entry (and its own price)
+    must survive lookup without being replaced by the migration target."""
+    for model_id in ("gpt-realtime-2", "gpt-realtime-1.5", "gpt-4o-realtime-preview"):
+        model = registry.get(model_id)
+        assert model.id == model_id
+        assert model.status == "deprecated"
+    # NOTE: get_price() migrates first (registry-wide behavior), so a deprecated
+    # id reads the SUCCESSOR's rates. A biller charging a deprecated id verbatim
+    # must read `registry.get(id).pricing` instead — these differ here.
+    assert registry.get("gpt-realtime-1.5").pricing.text_output_per_1m == 16.0
+    assert registry.get_price("gpt-realtime-1.5").text_output_per_1m == 24.0
+    assert registry.get("gpt-4o-mini-realtime-preview").pricing.audio_input_per_1m == 10.0
+
+
+def test_old_snapshots_without_the_new_fields_still_load(registry):
+    """Adapter tolerance in the other direction: a pre-realtime registry has no
+    `modalities` and no `schema_minor`."""
+    data = json.loads(registry.model_dump_json())
+    data.pop("schema_minor", None)
+    data["models"] = [m for m in data["models"] if m["kind"] != "realtime"]
+    for model in data["models"]:
+        model.pop("modalities", None)
+    loaded = Registry.model_validate(data)
+    assert loaded.schema_minor == 0
+    assert loaded.models[0].modalities is None
+    assert loaded.models_by_kind("realtime") == []
