@@ -2,6 +2,20 @@
 
 Dates are the promotion date (when `stable` was moved), not the merge date.
 
+## Unreleased — `server_web_tools` audited for OpenAI + Z.ai (facts only, no schema change)
+
+`server_web_tools` was `false` on every non-Anthropic chat model even though OpenAI's
+Responses API exposes the built-in `web_search` tool and Z.ai exposes a server-side
+`web_search` tool. Now `true` on: gpt-5.6-sol / -terra / -luna, gpt-5.5, gpt-5.4 (+mini,
++nano), gpt-5.3, gpt-5.2, gpt-5.1, gpt-5 (+mini, +nano), o3, o4-mini, gpt-4.1 (+mini)
+— per OpenAI's web-search guide (Responses `web_search`; the 4o family only had it via the
+retired `*-search-preview` variants, so 4o stays `false`; pro variants left `false` pending
+verification) — and glm-5.3-flash (Z.ai `tools: [{type: "web_search"}]`, a different wire
+shape than OpenAI's, noted in its description). Consumers that need the OpenAI shape must
+still check `responses_api` alongside this flag. Sources: developers.openai.com
+tools-web-search guide + pricing (reasoning models $10/1k calls + content tokens;
+non-reasoning $25/1k calls), docs.z.ai guides/tools/web-search.
+
 ## 2026-08-30 — the `realtime` kind (v0.3.0, schema 1.1)
 
 73 models (50 chat, 5 embedding, 8 image_gen, **10 realtime**), 66 migrations, 6 providers.
