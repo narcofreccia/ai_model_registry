@@ -2,6 +2,20 @@
 
 Dates are the promotion date (when `stable` was moved), not the merge date.
 
+## Unreleased — GPT-5.6 family repriced + cached-input prices (facts only, no schema change)
+
+Verified against developers.openai.com/api/docs/pricing (fetched 2026-08-31, Standard tier):
+
+| model | input | cached input | output |
+|---|---|---|---|
+| gpt-5.6-sol | 5.00 → **4.00** | null → **0.40** | 30.00 → **20.00** |
+| gpt-5.6-terra | 2.50 → **2.00** | null → **0.20** | 15.00 → **12.00** |
+| gpt-5.6-luna | 1.00 → **0.20** | null → **0.02** | 6.00 → **1.20** |
+
+The previous input/output rates predated OpenAI's 2026-07-30 price cut. Cached input is
+10% of input, as on every GPT-5.x model. Caveat from the page itself: gpt-5.6-sol's rate
+is labelled promotional, "available at least through November 21, 2026" — re-check it then.
+
 ## Unreleased — `server_web_tools` audited for OpenAI + Z.ai (facts only, no schema change)
 
 `server_web_tools` was `false` on every non-Anthropic chat model even though OpenAI's
