@@ -2,6 +2,40 @@
 
 Dates are the promotion date (when `stable` was moved), not the merge date.
 
+## Unreleased — September 2026 launches: Fable 5.1, GPT-6 Astra, GPT Image 2.5, Gemini 3.8 (v0.3.1, facts only, no schema change)
+
+80 models (53 chat, 5 embedding, 10 image_gen, 12 realtime). Seven additions, nothing deprecated or
+repriced. Every figure below was read from the provider's own page on 2026-09-16.
+
+| id | kind | api_model_id | price (USD / 1M) | source |
+|---|---|---|---|---|
+| `claude-fable-5-1` | chat | `claude-fable-5-1` | in 10 · cached **0.25** (0.025x, unlike every other Claude) · out 50 | platform.claude.com/docs/en/about-claude/pricing |
+| `gpt-6-astra` | chat | `gpt-6-astra` | in 10 · cached 1 · out 50; variant `long_context_gt_272k` 20 / 2 / 75 | developers.openai.com/api/docs/models/gpt-6-astra + /pricing |
+| `openai_gpt_image_2_5_sunburst` | image_gen | `gpt-image-2.5-sunburst` (alias snapshot `-2026-09-08`) | `null` — see below | developers.openai.com/api/docs/models/gpt-image-2.5-sunburst |
+| `openai_gpt_image_2_5_flare` | image_gen | `gpt-image-2.5-flare` (alias snapshot `-2026-09-08`) | `null` — see below | developers.openai.com/api/docs/models/gpt-image-2.5-flare |
+| `gemini-3.8-flash` | chat | `gemini-3.8-flash` | in 0.75 · cached 0.075 · out 3.75 through 2026-12-31; variant `from_2027-01-01` 1.5 / 0.15 / 7.5 | ai.google.dev/gemini-api/docs/pricing (GA 2026-09-02 per changelog) |
+| `gemini-3.8-live` | realtime | `gemini-3.8-live` | audio 3 / 12 · text 0.75 / 4.5 · cached `null` (not published) | same pricing page (GA 2026-09-15 per changelog) |
+| `gemini-3.8-live-extended-thinking` | realtime | `gemini-3.8-live-extended-thinking` | same as `gemini-3.8-live` | same |
+
+Capability notes: `claude-fable-5-1` is `adaptive` reasoning, no temperature, thinking always on;
+`gpt-6-astra` is `openai_effort` (low..max), `responses_api` + `server_web_tools`, no temperature
+(reasoning model, like the 5.6 family); `gemini-3.8-flash` is `google_budget` (thinking_level low/medium/high,
+`minimal` rejected) and **`allows_temperature: false`** because Google deprecated `temperature`/`top_p`/`top_k`
+on 2026-07-21 — the older Gemini entries keep `true` untouched; the two 3.8 Live models carry the 30-voice
+TTS set of `gemini-3.1-flash-live-preview` (the Live guide says native-audio models take any TTS voice),
+`modalities: ["AUDIO"]`, `reasoning: none` (3.8 Live rejects `thinking_level`; Extended Thinking reasons
+on its own with no knob).
+
+**TODO (shape gap, not a missing fact):** the GPT Image 2.5 pair is token-priced — text in $5 (cached $1.25),
+image in $8 (cached $2), image out $30 per 1M, identical to GPT Image 2 — but `image_pricing` only expresses
+`per_image`, and OpenAI publishes no per-image figure for 2.5. The rates are recorded verbatim in each
+entry's `description`; expressing them needs an additive `image_token_pricing` shape (schema_minor 2).
+
+Not touched on purpose: `gemini-3.1-flash-live-preview`, `gemini-3.5-flash`, `gemini-3.1-pro-preview`
+stay `active` — Google's changelog announces no shutdown for them; Gemini 3.6/3.7 Flash and 3.5 Flash-Lite
+(GA July/August 2026) are still absent and can follow in the next facts pass. tide_backend consumers:
+`openai_gpt_image_2_5_*` need an `_OPENAI_IMAGE_INPUT_API` overlay row ("edits") and a `model_pricing` row.
+
 ## Unreleased — GPT-5.6 family repriced + cached-input prices (facts only, no schema change)
 
 Verified against developers.openai.com/api/docs/pricing (fetched 2026-08-31, Standard tier):

@@ -91,8 +91,15 @@ Consumers read the `stable` tag, so a merge to `main` changes nothing until prom
 
 1. Merge to `main` with CI green.
 2. Add the `CHANGELOG.md` entry for the promotion (date + what changed).
-3. GitHub → Actions → **CI** → *Run workflow* → `promote: true`. The job re-runs validation
-   and only then force-moves the tag.
+3. Trigger the promote run. Either GitHub → Actions → **CI** → *Run workflow* →
+   `promote: true`, or from the CLI:
+
+   ```bash
+   gh workflow run ci.yml --ref main -f promote=true
+   gh run watch "$(gh run list --workflow=ci.yml --branch=main --limit=1 --json databaseId --jq '.[0].databaseId')"
+   ```
+
+   The job re-runs validation and only then force-moves the tag.
 4. Verify: `curl -s https://raw.githubusercontent.com/narcofreccia/ai_model_registry/stable/registry.json | head`.
 
 Consumers pinning a SHA (tide_share's desktop builds) are unaffected until they bump it.

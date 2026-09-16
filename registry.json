@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "schema_minor": 1,
-  "generated_at": "2026-08-30T12:00:00Z",
+  "generated_at": "2026-09-16T12:00:00Z",
   "providers": {
     "anthropic": {
       "name": "Anthropic",
@@ -340,6 +340,94 @@
       "pricing": null
     },
     {
+      "id": "claude-fable-5-1",
+      "name": "Claude Fable 5.1",
+      "description": "Anthropic's most capable widely released model; successor to Claude Fable 5 in the same tier at the same per-token price. Thinking always on (adaptive; effort low..max); forced tool_choice any/tool rejected; requires 30-day data retention. Cache reads at 0.025x input.",
+      "provider": "anthropic",
+      "kind": "chat",
+      "api_model_id": "claude-fable-5-1",
+      "aliases": [],
+      "reasoning": "adaptive",
+      "allows_temperature": false,
+      "responses_api": false,
+      "server_web_tools": true,
+      "vision": true,
+      "needs_pdf_rasterization": false,
+      "max_reference_images": null,
+      "voices": null,
+      "status": "active",
+      "pricing": {
+        "input_per_1m": 10.0,
+        "output_per_1m": 50.0,
+        "cached_input_per_1m": 0.25
+      }
+    },
+    {
+      "id": "gpt-6-astra",
+      "name": "GPT-6 Astra",
+      "description": "OpenAI's most capable model, built for the hardest end-to-end work. 1.05M context (922K max input), 128K max output, reasoning effort low/medium/high/xhigh/max; no temperature (reasoning model). Prompts over 272K input tokens are billed at the long_context variant.",
+      "provider": "openai",
+      "kind": "chat",
+      "api_model_id": "gpt-6-astra",
+      "aliases": [],
+      "reasoning": "openai_effort",
+      "allows_temperature": false,
+      "responses_api": true,
+      "server_web_tools": true,
+      "vision": true,
+      "needs_pdf_rasterization": false,
+      "max_reference_images": null,
+      "voices": null,
+      "status": "active",
+      "pricing": {
+        "input_per_1m": 10.0,
+        "output_per_1m": 50.0,
+        "cached_input_per_1m": 1.0,
+        "variants": [
+          {
+            "condition": "long_context_gt_272k",
+            "input_per_1m": 20.0,
+            "output_per_1m": 75.0,
+            "cached_input_per_1m": 2.0,
+            "note": "Prompts with more than 272K input tokens: 2x input and cache rates, 1.5x output."
+          }
+        ]
+      }
+    },
+    {
+      "id": "gemini-3.8-flash",
+      "name": "Gemini 3.8 Flash",
+      "description": "Google's most intelligent Flash model, for long-horizon software engineering and agents (GA 2026-09-02). 1,048,576 input / 65,536 output tokens; thinking_level low/medium/high (minimal rejected); temperature/top_p/top_k deprecated since 2026-07-21, so do not send them. Introductory price through 2026-12-31, standard rate from 2027-01-01 in the variant.",
+      "provider": "google",
+      "kind": "chat",
+      "api_model_id": "gemini-3.8-flash",
+      "aliases": [],
+      "reasoning": "google_budget",
+      "allows_temperature": false,
+      "responses_api": false,
+      "server_web_tools": false,
+      "vision": true,
+      "needs_pdf_rasterization": false,
+      "max_reference_images": null,
+      "voices": null,
+      "status": "active",
+      "pricing": {
+        "input_per_1m": 0.75,
+        "output_per_1m": 3.75,
+        "cached_input_per_1m": 0.075,
+        "effective_from": "2026-09-02",
+        "variants": [
+          {
+            "condition": "from_2027-01-01",
+            "input_per_1m": 1.5,
+            "output_per_1m": 7.5,
+            "cached_input_per_1m": 0.15,
+            "note": "Standard pricing starting January 1, 2027 (introductory rate ends 2026-12-31)."
+          }
+        ]
+      }
+    },
+    {
       "id": "local:all-MiniLM-L6-v2",
       "name": "all-MiniLM-L6-v2 (Local)",
       "description": "Free, runs locally via ChromaDB.",
@@ -478,6 +566,50 @@
       "vision": true,
       "needs_pdf_rasterization": false,
       "max_reference_images": 16,
+      "voices": null,
+      "status": "active",
+      "pricing": null
+    },
+    {
+      "id": "openai_gpt_image_2_5_sunburst",
+      "name": "GPT Image 2.5 Sunburst",
+      "description": "OpenAI's most capable image generation and editing model (released 2026-09-08). Quality low/medium/high/xhigh/max/auto; Images API generations + edits, or the Responses image_generation tool. Token-priced: text input $5/1M (cached $1.25), image input $8/1M (cached $2), image output $30/1M — same rates as GPT Image 2; per-image price not published, so pricing is null.",
+      "provider": "openai",
+      "kind": "image_gen",
+      "api_model_id": "gpt-image-2.5-sunburst",
+      "aliases": [
+        "openai/gpt-image-2.5-sunburst",
+        "gpt-image-2.5-sunburst-2026-09-08"
+      ],
+      "reasoning": "none",
+      "allows_temperature": false,
+      "responses_api": false,
+      "server_web_tools": false,
+      "vision": true,
+      "needs_pdf_rasterization": false,
+      "max_reference_images": null,
+      "voices": null,
+      "status": "active",
+      "pricing": null
+    },
+    {
+      "id": "openai_gpt_image_2_5_flare",
+      "name": "GPT Image 2.5 Flare",
+      "description": "OpenAI's fastest high-quality everyday image generation model (released 2026-09-08). Quality low/medium/high/xhigh/max/auto; Images API generations + edits, or the Responses image_generation tool. Token-priced at the same rates as Sunburst; per-image price not published, so pricing is null.",
+      "provider": "openai",
+      "kind": "image_gen",
+      "api_model_id": "gpt-image-2.5-flare",
+      "aliases": [
+        "openai/gpt-image-2.5-flare",
+        "gpt-image-2.5-flare-2026-09-08"
+      ],
+      "reasoning": "none",
+      "allows_temperature": false,
+      "responses_api": false,
+      "server_web_tools": false,
+      "vision": true,
+      "needs_pdf_rasterization": false,
+      "max_reference_images": null,
       "voices": null,
       "status": "active",
       "pricing": null
@@ -1666,6 +1798,124 @@
         "text_output_per_1m": 4.5,
         "cached_input_per_1m": 3.0
       }
+    },
+    {
+      "id": "gemini-3.8-live",
+      "name": "Gemini 3.8 Live",
+      "description": "Google's default Live API model for low-latency voice agents without reasoning delays (GA 2026-09-15). Native audio; thinking_level unsupported (remove it when migrating from gemini-3.1-flash-live-preview); async function calling (NON_BLOCKING) is the default. 131,072 input / 65,536 output tokens.",
+      "provider": "google",
+      "kind": "realtime",
+      "api_model_id": "gemini-3.8-live",
+      "aliases": [],
+      "reasoning": "none",
+      "allows_temperature": false,
+      "responses_api": false,
+      "server_web_tools": false,
+      "vision": false,
+      "needs_pdf_rasterization": false,
+      "max_reference_images": null,
+      "voices": [
+        "Achernar",
+        "Achird",
+        "Algenib",
+        "Algieba",
+        "Alnilam",
+        "Aoede",
+        "Autonoe",
+        "Callirrhoe",
+        "Charon",
+        "Despina",
+        "Enceladus",
+        "Erinome",
+        "Fenrir",
+        "Gacrux",
+        "Iapetus",
+        "Kore",
+        "Laomedeia",
+        "Leda",
+        "Orus",
+        "Pulcherrima",
+        "Puck",
+        "Rasalgethi",
+        "Sadachbia",
+        "Sadaltager",
+        "Schedar",
+        "Sulafat",
+        "Umbriel",
+        "Vindemiatrix",
+        "Zephyr",
+        "Zubenelgenubi"
+      ],
+      "status": "active",
+      "pricing": {
+        "audio_input_per_1m": 3.0,
+        "audio_output_per_1m": 12.0,
+        "text_input_per_1m": 0.75,
+        "text_output_per_1m": 4.5,
+        "cached_input_per_1m": null
+      },
+      "modalities": [
+        "AUDIO"
+      ]
+    },
+    {
+      "id": "gemini-3.8-live-extended-thinking",
+      "name": "Gemini 3.8 Live Extended Thinking",
+      "description": "High-reasoning Live API model for voice interactions when more background reasoning is needed (GA 2026-09-15). Native audio, built-in interleaved reasoning (no thinking_level config). Same token rates as Gemini 3.8 Live.",
+      "provider": "google",
+      "kind": "realtime",
+      "api_model_id": "gemini-3.8-live-extended-thinking",
+      "aliases": [],
+      "reasoning": "none",
+      "allows_temperature": false,
+      "responses_api": false,
+      "server_web_tools": false,
+      "vision": false,
+      "needs_pdf_rasterization": false,
+      "max_reference_images": null,
+      "voices": [
+        "Achernar",
+        "Achird",
+        "Algenib",
+        "Algieba",
+        "Alnilam",
+        "Aoede",
+        "Autonoe",
+        "Callirrhoe",
+        "Charon",
+        "Despina",
+        "Enceladus",
+        "Erinome",
+        "Fenrir",
+        "Gacrux",
+        "Iapetus",
+        "Kore",
+        "Laomedeia",
+        "Leda",
+        "Orus",
+        "Pulcherrima",
+        "Puck",
+        "Rasalgethi",
+        "Sadachbia",
+        "Sadaltager",
+        "Schedar",
+        "Sulafat",
+        "Umbriel",
+        "Vindemiatrix",
+        "Zephyr",
+        "Zubenelgenubi"
+      ],
+      "status": "active",
+      "pricing": {
+        "audio_input_per_1m": 3.0,
+        "audio_output_per_1m": 12.0,
+        "text_input_per_1m": 0.75,
+        "text_output_per_1m": 4.5,
+        "cached_input_per_1m": null
+      },
+      "modalities": [
+        "AUDIO"
+      ]
     },
     {
       "id": "gemini-live-2.5-flash-native-audio",

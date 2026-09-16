@@ -22,6 +22,9 @@ TIDE_SHARE_CHAT_ORDER = [
     "moonshotai/kimi-k3",
     "deepseek/deepseek-v4-pro",
     "zai/glm-5.3-flash",
+    "claude-fable-5-1",
+    "gpt-6-astra",
+    "gemini-3.8-flash",
 ]
 
 
@@ -133,6 +136,8 @@ REALTIME_IDS = [
     "gpt-4o-realtime-preview",
     "gpt-4o-mini-realtime-preview",
     "gemini-3.1-flash-live-preview",
+    "gemini-3.8-live",
+    "gemini-3.8-live-extended-thinking",
     "gemini-live-2.5-flash-native-audio",
     "gemini-2.5-flash-native-audio-preview-12-2025",
     "gemini-2.5-flash-native-audio-preview-09-2025",
