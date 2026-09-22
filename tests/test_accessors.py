@@ -130,6 +130,7 @@ def test_variants_load_and_do_not_disturb_base_readers(registry):
 # --- realtime kind ---------------------------------------------------------
 REALTIME_IDS = [
     "gpt-realtime-2.1",
+    "gpt-realtime-2.1-mini",
     "gpt-realtime-2",
     "gpt-realtime-1.5",
     "gpt-audio-1.5",

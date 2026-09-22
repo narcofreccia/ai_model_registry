@@ -4,6 +4,20 @@ Dates are the promotion date (when `stable` was moved), not the merge date.
 
 ## Unreleased — September 2026 launches: Fable 5.1, GPT-6 Astra, GPT Image 2.5, Gemini 3.8 (v0.3.1, facts only, no schema change)
 
+### Addendum 2026-09-22 — `gpt-realtime-2.1-mini` (v0.3.2, facts only)
+
+81 models (13 realtime). One addition, read from developers.openai.com/api/docs/pricing on 2026-09-22:
+
+| id | kind | api_model_id | price (USD / 1M) |
+|---|---|---|---|
+| `gpt-realtime-2.1-mini` | realtime | `gpt-realtime-2.1-mini` | audio 10 / 20 · text 0.6 / 2.4 · cached 0.06 (text; cached audio is 0.30 — the schema has one cached axis, we keep the text figure) |
+
+Not added: `gpt-live-1` (GA 2026-09-10) bills the voice layer at **$0.05/min** plus a separately
+billed backend model — a per-minute pricing shape the schema cannot express. Add once a
+`per_minute` shape (or a `duplex` kind) exists. Also noted: Gemini 3.8 Live defaults to
+NON_BLOCKING function calls (server side); consumers using livekit-plugins-google should pin
+`tool_behavior=BLOCKING` (livekit/agents#7302).
+
 80 models (53 chat, 5 embedding, 10 image_gen, 12 realtime). Seven additions, nothing deprecated or
 repriced. Every figure below was read from the provider's own page on 2026-09-16.
 

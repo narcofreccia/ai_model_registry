@@ -1531,6 +1531,48 @@
       }
     },
     {
+      "id": "gpt-realtime-2.1-mini",
+      "name": "GPT Realtime 2.1 Mini",
+      "description": "Smaller, cheaper speech-to-speech realtime model in the 2.1 family (2026-07-06); same voices and modalities as gpt-realtime-2.1.",
+      "provider": "openai",
+      "kind": "realtime",
+      "api_model_id": "gpt-realtime-2.1-mini",
+      "aliases": [],
+      "reasoning": "none",
+      "allows_temperature": true,
+      "responses_api": false,
+      "server_web_tools": false,
+      "vision": false,
+      "needs_pdf_rasterization": false,
+      "max_reference_images": null,
+      "voices": [
+        "alloy",
+        "ash",
+        "ballad",
+        "coral",
+        "echo",
+        "fable",
+        "marin",
+        "nova",
+        "onyx",
+        "sage",
+        "shimmer",
+        "verse"
+      ],
+      "modalities": [
+        "text",
+        "audio"
+      ],
+      "status": "active",
+      "pricing": {
+        "audio_input_per_1m": 10.0,
+        "audio_output_per_1m": 20.0,
+        "text_input_per_1m": 0.6,
+        "text_output_per_1m": 2.4,
+        "cached_input_per_1m": 0.06
+      }
+    },
+    {
       "id": "gpt-realtime-2",
       "name": "GPT Realtime 2",
       "description": "Previous-generation OpenAI realtime model. Still callable; priced identically to Realtime 2.1.",
