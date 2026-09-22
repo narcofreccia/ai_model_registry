@@ -2,7 +2,7 @@
 
 Dates are the promotion date (when `stable` was moved), not the merge date.
 
-## Unreleased — September 2026 launches: Fable 5.1, GPT-6 Astra, GPT Image 2.5, Gemini 3.8 (v0.3.1, facts only, no schema change)
+## 2026-09-22 — September 2026 launches: Fable 5.1, GPT-6 Astra, GPT Image 2.5, Gemini 3.8, GPT Realtime 2.1 Mini (v0.3.1 → v0.3.2, facts only, no schema change)
 
 ### Addendum 2026-09-22 — `gpt-realtime-2.1-mini` (v0.3.2, facts only)
 
