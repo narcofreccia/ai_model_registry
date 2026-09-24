@@ -21,10 +21,13 @@ TIDE_SHARE_CHAT_ORDER = [
     "glm-5.3-flash",
     "moonshotai/kimi-k3",
     "deepseek/deepseek-v4-pro",
-    "zai/glm-5.3-flash",
+    "z-ai/glm-5.3-flash",
     "claude-fable-5-1",
     "gpt-6-astra",
     "gemini-3.8-flash",
+    "claude-opus-5-5",
+    "gpt-6-sol",
+    "gpt-6-luna",
 ]
 
 

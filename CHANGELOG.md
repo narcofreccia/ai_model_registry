@@ -2,6 +2,52 @@
 
 Dates are the promotion date (when `stable` was moved), not the merge date.
 
+## 2026-09-24 — Claude Opus 5.5, GPT-6 Sol + Luna, Claude cached rates, GLM OpenRouter slug (v0.3.2 → v0.3.3, facts only, no schema change)
+
+85 models (57 chat, 5 embedding, 10 image_gen, 13 realtime), 67 migrations. Every figure was read
+from the provider's own page on 2026-09-24.
+
+**Added** (all released 2026-09-22)
+
+| id | kind | api_model_id | price (USD / 1M) | source |
+|---|---|---|---|---|
+| `claude-opus-5-5` | chat | `claude-opus-5-5` | in 4 · cached **0.20** (0.05x) · out 20 | platform.claude.com/docs/en/about-claude/pricing + /models/opus-5-5/overview |
+| `gpt-6-sol` | chat | `gpt-6-sol` | in 2 · cached 0.20 · out 10; variant `long_context_gt_272k` 4 / 0.40 / 15 | developers.openai.com/api/docs/pricing + /models/gpt-6-sol |
+| `gpt-6-luna` | chat | `gpt-6-luna` | in 0.10 · cached 0.01 · out 0.50; variant `long_context_gt_272k` 0.20 / 0.02 / 0.75 | developers.openai.com/api/docs/pricing + /models/gpt-6-luna |
+
+Capability notes: `claude-opus-5-5` is `adaptive` (always on, default effort medium), no temperature;
+forced tool_choice and `computer_20251124` are rejected, as on Fable 5.1. `gpt-6-sol` / `gpt-6-luna`
+match `gpt-6-astra`: `openai_effort` (none..max), `responses_api`, `server_web_tools`, vision, no
+temperature. There is no GPT-6 Terra. Batch/Flex (0.5x) and Fast mode (2x) tiers are not recorded,
+same as for Astra.
+
+Nothing deprecated: Anthropic lists Opus 5 and Fable 5 as legacy-but-available, and OpenAI has not
+deprecated the GPT-5.6 family. Add `claude-opus-5` → `claude-opus-5-5` and `gpt-5.6-sol/-luna` →
+`gpt-6-sol/-luna` migrations when they are. Note `gpt-5.6-sol`'s current rate is promotional
+"at least through November 21, 2026".
+
+**Repriced** — cached input was `null`; Anthropic publishes it (0.1x input):
+
+| model | cached_input_per_1m |
+|---|---|
+| claude-opus-5 | null → **0.50** |
+| claude-sonnet-5 | null → **0.20** |
+| claude-haiku-4-5 | null → **0.10** |
+| claude-fable-5 | null → **1.00** |
+
+**Fixed** — `zai/glm-5.3-flash` (provider `openrouter`) was the wrong slug: OpenRouter's is
+`z-ai/glm-5.3-flash` (`/api/v1/models/zai/glm-5.3-flash/endpoints` → 404, `z-ai/…` → 200).
+Added `z-ai/glm-5.3-flash` in the same catalog position; the old id is `retired` with migration
+`zai/glm-5.3-flash` → `z-ai/glm-5.3-flash`. ndr_backend uses the old slug in examples and tests;
+update them when it bumps its pin.
+
+**TODO (shape gap):** `typesafe/jev-1.13` (TypeSafe "Jev", OpenRouter-only, released 2026-09-18,
+in 0.042 / out 0 per 1M, 32K context) is a *decision* model: it returns typed choices/probabilities,
+never text, via `POST /api/alpha/decisions` (not chat completions). It needs a new `kind`, and the
+adapter's `Kind` is a strict Literal — an unknown kind makes every current adapter reject the whole
+registry. Path: ship an adapter that degrades unknown kinds, move consumers onto it, then add a
+`decision` kind + Jev. No consumer has a decisions-API client today.
+
 ## 2026-09-22 — September 2026 launches: Fable 5.1, GPT-6 Astra, GPT Image 2.5, Gemini 3.8, GPT Realtime 2.1 Mini (v0.3.1 → v0.3.2, facts only, no schema change)
 
 ### Addendum 2026-09-22 — `gpt-realtime-2.1-mini` (v0.3.2, facts only)

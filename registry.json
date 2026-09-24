@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "schema_minor": 1,
-  "generated_at": "2026-09-16T12:00:00Z",
+  "generated_at": "2026-09-24T12:00:00Z",
   "providers": {
     "anthropic": {
       "name": "Anthropic",
@@ -61,7 +61,7 @@
       "pricing": {
         "input_per_1m": 5.0,
         "output_per_1m": 25.0,
-        "cached_input_per_1m": null
+        "cached_input_per_1m": 0.5
       }
     },
     {
@@ -84,7 +84,7 @@
       "pricing": {
         "input_per_1m": 2.0,
         "output_per_1m": 10.0,
-        "cached_input_per_1m": null
+        "cached_input_per_1m": 0.2
       }
     },
     {
@@ -107,7 +107,7 @@
       "pricing": {
         "input_per_1m": 1.0,
         "output_per_1m": 5.0,
-        "cached_input_per_1m": null
+        "cached_input_per_1m": 0.1
       }
     },
     {
@@ -130,7 +130,7 @@
       "pricing": {
         "input_per_1m": 10.0,
         "output_per_1m": 50.0,
-        "cached_input_per_1m": null
+        "cached_input_per_1m": 1.0
       }
     },
     {
@@ -323,10 +323,29 @@
     {
       "id": "zai/glm-5.3-flash",
       "name": "GLM-5.3 Flash (OpenRouter)",
-      "description": "GLM-5.3 Flash routed through OpenRouter (no Z.ai key needed).",
+      "description": "Wrong OpenRouter slug (OpenRouter's is z-ai/, with a hyphen); requests to it 404. Use z-ai/glm-5.3-flash.",
       "provider": "openrouter",
       "kind": "chat",
       "api_model_id": "zai/glm-5.3-flash",
+      "aliases": [],
+      "reasoning": "openrouter_reasoning",
+      "allows_temperature": true,
+      "responses_api": false,
+      "server_web_tools": false,
+      "vision": true,
+      "needs_pdf_rasterization": false,
+      "max_reference_images": null,
+      "voices": null,
+      "status": "retired",
+      "pricing": null
+    },
+    {
+      "id": "z-ai/glm-5.3-flash",
+      "name": "GLM-5.3 Flash (OpenRouter)",
+      "description": "GLM-5.3 Flash routed through OpenRouter (no Z.ai key needed).",
+      "provider": "openrouter",
+      "kind": "chat",
+      "api_model_id": "z-ai/glm-5.3-flash",
       "aliases": [],
       "reasoning": "openrouter_reasoning",
       "allows_temperature": true,
@@ -423,6 +442,93 @@
             "output_per_1m": 7.5,
             "cached_input_per_1m": 0.15,
             "note": "Standard pricing starting January 1, 2027 (introductory rate ends 2026-12-31)."
+          }
+        ]
+      }
+    },
+    {
+      "id": "claude-opus-5-5",
+      "name": "Claude Opus 5.5",
+      "description": "Anthropic's recommended default for most workloads; successor to Claude Opus 5 at a lower price. 1M context, 128K max output. Thinking always on (adaptive; default effort medium); forced tool_choice any/tool rejected; computer_20251124 not accepted. Cache reads at 0.05x input.",
+      "provider": "anthropic",
+      "kind": "chat",
+      "api_model_id": "claude-opus-5-5",
+      "aliases": [],
+      "reasoning": "adaptive",
+      "allows_temperature": false,
+      "responses_api": false,
+      "server_web_tools": true,
+      "vision": true,
+      "needs_pdf_rasterization": false,
+      "max_reference_images": null,
+      "voices": null,
+      "status": "active",
+      "pricing": {
+        "input_per_1m": 4.0,
+        "output_per_1m": 20.0,
+        "cached_input_per_1m": 0.2
+      }
+    },
+    {
+      "id": "gpt-6-sol",
+      "name": "GPT-6 Sol",
+      "description": "GPT-6 mid tier for complex coding and agentic workflows; successor to GPT-5.6 Sol at half the price. 1.05M context, 128K max output, reasoning effort none/low/medium/high/xhigh/max; no temperature (reasoning model). Prompts over 272K input tokens are billed at the long_context variant.",
+      "provider": "openai",
+      "kind": "chat",
+      "api_model_id": "gpt-6-sol",
+      "aliases": [],
+      "reasoning": "openai_effort",
+      "allows_temperature": false,
+      "responses_api": true,
+      "server_web_tools": true,
+      "vision": true,
+      "needs_pdf_rasterization": false,
+      "max_reference_images": null,
+      "voices": null,
+      "status": "active",
+      "pricing": {
+        "input_per_1m": 2.0,
+        "output_per_1m": 10.0,
+        "cached_input_per_1m": 0.2,
+        "variants": [
+          {
+            "condition": "long_context_gt_272k",
+            "input_per_1m": 4.0,
+            "output_per_1m": 15.0,
+            "cached_input_per_1m": 0.4,
+            "note": "Prompts with more than 272K input tokens: 2x input and cache rates, 1.5x output."
+          }
+        ]
+      }
+    },
+    {
+      "id": "gpt-6-luna",
+      "name": "GPT-6 Luna",
+      "description": "GPT-6 small tier for focused, high-volume tasks; successor to GPT-5.6 Luna. 1.05M context (922K max input), 128K max output, reasoning effort none/low/medium/high/xhigh/max; no temperature (reasoning model). Prompts over 272K input tokens are billed at the long_context variant.",
+      "provider": "openai",
+      "kind": "chat",
+      "api_model_id": "gpt-6-luna",
+      "aliases": [],
+      "reasoning": "openai_effort",
+      "allows_temperature": false,
+      "responses_api": true,
+      "server_web_tools": true,
+      "vision": true,
+      "needs_pdf_rasterization": false,
+      "max_reference_images": null,
+      "voices": null,
+      "status": "active",
+      "pricing": {
+        "input_per_1m": 0.1,
+        "output_per_1m": 0.5,
+        "cached_input_per_1m": 0.01,
+        "variants": [
+          {
+            "condition": "long_context_gt_272k",
+            "input_per_1m": 0.2,
+            "output_per_1m": 0.75,
+            "cached_input_per_1m": 0.02,
+            "note": "Prompts with more than 272K input tokens: 2x input and cache rates, 1.5x output."
           }
         ]
       }
@@ -2203,6 +2309,7 @@
     "gpt-realtime-1.5": "gpt-realtime-2",
     "gpt-4o-realtime-preview": "gpt-realtime-2.1",
     "gpt-4o-mini-realtime-preview": "gpt-realtime-2.1",
-    "gemini-2.5-flash-native-audio-preview-09-2025": "gemini-2.5-flash-native-audio-preview-12-2025"
+    "gemini-2.5-flash-native-audio-preview-09-2025": "gemini-2.5-flash-native-audio-preview-12-2025",
+    "zai/glm-5.3-flash": "z-ai/glm-5.3-flash"
   }
 }
