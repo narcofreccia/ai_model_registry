@@ -9,7 +9,7 @@ class Registry(RegistryData):
     """Registry data plus the accessors consumers actually call."""
 
     # -- indexes ----------------------------------------------------------
-    def models_by_kind(self, kind: Kind | None = None):
+    def models_by_kind(self, kind: Kind | str | None = None):
         """All models grouped by kind, or just the list for one ``kind``."""
         grouped: dict[str, list[Model]] = {}
         for model in self.models:

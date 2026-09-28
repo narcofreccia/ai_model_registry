@@ -11,7 +11,9 @@ Before every push: `python3 scripts/validate.py` (green = no failures).
    `id`, `name`, `description`, `provider`, `kind`, `api_model_id`, `aliases`,
    `reasoning`, `allows_temperature`, `responses_api`, `server_web_tools`, `vision`,
    `needs_pdf_rasterization`, `max_reference_images`, `voices`, `status`, `pricing`.
-   `modalities` is optional (realtime models only; `null` elsewhere).
+   `modalities` is optional (realtime models only; `null` elsewhere). The decision fields
+   (`question_types`, `max_request_tokens`, `max_state_question_tokens`,
+   `max_choice_options`, `max_score_levels`) are optional and decision-only.
 2. `provider` must be a key in `providers`; add the provider first if it's new.
 3. `id` is what consumers store. `api_model_id` is what goes on the wire (differs for
    dated snapshot ids). Old names for the *same* model go in `aliases`; names of a
@@ -50,6 +52,23 @@ Before every push: `python3 scripts/validate.py` (green = no failures).
 4. Preview-dated ids (`…-preview-09-2025`) churn: when a newer date lands, deprecate the
    old id and add the migration rather than editing it in place.
 
+## Add a decision model
+
+`kind: "decision"` (structured-decision models such as TypeSafe Jev: typed questions in,
+probabilities out, no text). On top of the common fields:
+
+1. `question_types` must be a **non-empty** list of the provider's question type tokens,
+   spelled as the API wants them (TypeSafe `["noul","choice","score"]`) — validation
+   fails otherwise.
+2. Copy the provider's published limits into `max_request_tokens`,
+   `max_state_question_tokens`, `max_choice_options`, `max_score_levels`; `null` when
+   not published. These fields on any other kind fail validation.
+3. Pricing uses the **token shape**. Input-only billing is `"output_per_1m": 0`, which
+   is a published fact, not a missing one (`pricing: null` still means unverified).
+4. `reasoning: "none"`; `allows_temperature: false` when the model has no sampling
+   parameters, even if the API ignores rather than rejects them.
+5. New decision models go after the existing decision block at the end of `models`.
+
 ## Extend the schema
 
 Additive changes (a new kind, a new optional field, a new pricing shape) bump
@@ -58,7 +77,9 @@ a change that stops older consumers loading the file. `schema_minor` is a separa
 key precisely so adapters that type `schema_version` as an `int` keep working — never turn
 `schema_version` into a fractional number. Before promoting an additive change, load the
 new `registry.json` through the **`stable`** adapter and confirm the older kinds' output is
-byte-identical.
+byte-identical. A new `kind` value is the exception: adapters before 0.4.0 reject an
+unknown kind outright, so do not promote a registry carrying one until every consumer
+pins adapter 0.4.0+.
 - One `CHANGELOG.md` line per price change: model, old → new, source.
 
 ## Deprecate or retire a model

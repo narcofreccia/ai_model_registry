@@ -60,6 +60,7 @@ def test_the_shipped_registry_passes_every_invariant(validate):
     validate.check_migrations(registry)
     validate.check_lifecycle(registry)
     validate.check_realtime(registry)
+    validate.check_decision(registry)
     assert validate.failures == []
 
 

@@ -76,6 +76,7 @@ raised, as long as a fallback remains. Only a total failure of all four raises.
 | `kind` | pricing fields |
 |---|---|
 | `chat`, `embedding` | `input_per_1m`, `output_per_1m`, `cached_input_per_1m` |
+| `decision` | token shape: `input_per_1m`, `output_per_1m` (`0` when output is free) |
 | `image_gen` | `per_image` |
 | `realtime` | `audio_input_per_1m`, `audio_output_per_1m`, `text_input_per_1m`, `text_output_per_1m`, `cached_input_per_1m` (+ optional `cached_audio_input_per_1m`) |
 
@@ -85,10 +86,23 @@ models also carry `voices` (the voice ids the provider accepts) and `modalities`
 session modality tokens, spelled as the API wants them: OpenAI `["text","audio"]`, Google
 Live `["AUDIO"]`).
 
+`decision` models (schema_minor 2) answer typed questions about a `state` and never
+generate text; TypeSafe's Jev is the first. They are not chat models: call them through
+the provider's decision endpoint (or pydantic-ai's `typesafe:` prefix), never a chat path.
+They carry `question_types` (TypeSafe: `noul` yes/no → probability, `choice` → key +
+confidence + per-option probabilities, `score` → probability-weighted level),
+`max_request_tokens` (state + all questions), `max_state_question_tokens` (state + the
+longest question), `max_choice_options` and `max_score_levels`. These fields are `null`
+on every other kind.
+
 ### Rules consumers must follow
 
 - **Ignore model kinds you don't handle.** New kinds are added additively (`realtime`
-  arrived in schema 1.1); filter by the kinds you know instead of rejecting the rest.
+  arrived in schema 1.1, `decision` in 1.2); filter by the kinds you know instead of
+  rejecting the rest. Adapter **0.4.0+** loads a kind it does not know (kept verbatim,
+  with a warning). Adapters **before 0.4.0** type `kind` as a closed Literal and reject
+  the whole registry when it contains `decision` — `load()` then falls back to an older
+  source. Bump the adapter pin together with any snapshot that carries a new kind.
 - **`get_price(id)` migrates first.** For a deprecated-but-still-callable id, that returns
   the *successor's* rates. A biller charging that id verbatim must read
   `registry.get(id).pricing` instead.

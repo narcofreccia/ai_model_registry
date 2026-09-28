@@ -176,7 +176,44 @@ def check_realtime(registry: dict) -> None:
 
 
 # ---------------------------------------------------------------------------
-# 7. diff vs the published `stable` registry
+# 7. decision models: question types + token pricing shape
+# ---------------------------------------------------------------------------
+_DECISION_FIELDS = (
+    "question_types",
+    "max_request_tokens",
+    "max_state_question_tokens",
+    "max_choice_options",
+    "max_score_levels",
+)
+
+
+def check_decision(registry: dict) -> None:
+    for model in registry.get("models", []):
+        model_id = model.get("id")
+        pricing = model.get("pricing") or {}
+        keys = set(pricing)
+        if model.get("kind") == "decision":
+            if not model.get("question_types"):
+                fail(
+                    f"decision model {model_id!r} has no question_types — list the "
+                    f"question type tokens the API accepts"
+                )
+            if pricing and not keys & _TOKEN_RATE_KEYS:
+                fail(
+                    f"decision model {model_id!r} is not priced on the token shape "
+                    f"({sorted(keys)}) — use input_per_1m / output_per_1m"
+                )
+        else:
+            stray = [f for f in _DECISION_FIELDS if model.get(f) is not None]
+            if stray:
+                fail(
+                    f"model {model_id!r} (kind {model.get('kind')!r}) carries "
+                    f"decision-only fields {stray}"
+                )
+
+
+# ---------------------------------------------------------------------------
+# 8. diff vs the published `stable` registry
 # ---------------------------------------------------------------------------
 def check_against_stable(registry: dict) -> None:
     try:
@@ -225,6 +262,7 @@ def main() -> int:
     check_migrations(registry)
     check_lifecycle(registry)
     check_realtime(registry)
+    check_decision(registry)
     check_against_stable(registry)
 
     for note in notes:

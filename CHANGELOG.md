@@ -2,6 +2,45 @@
 
 Dates are the promotion date (when `stable` was moved), not the merge date.
 
+## Unreleased (not promoted) — `decision` kind + TypeSafe Jev 1.13 (v0.3.3 → v0.4.0, schema_minor 1 → 2)
+
+86 models (57 chat, 1 decision, 5 embedding, 10 image_gen, 13 realtime), 67 migrations, 7 providers.
+Closes the 0.3.3 "shape gap" TODO, via TypeSafe's own API rather than OpenRouter.
+
+**Schema (additive, schema_minor 2):** `kind` gains `decision`, for models that answer typed
+questions about a state with probabilities and never generate text. New optional,
+decision-only model fields: `question_types`, `max_request_tokens`, `max_state_question_tokens`,
+`max_choice_options`, `max_score_levels`. Decision pricing reuses the token shape. The provider
+`base_url` description now allows a URL alongside a `pydantic_ai_prefix` (informational there,
+not an OpenAI-compatible endpoint). `validate.py` gains `check_decision`: decision models need
+non-empty `question_types` and token-shape pricing, and other kinds may not carry the
+decision fields.
+
+**Adapter:** `Kind` includes `"decision"`; `Model.kind` now keeps a kind newer than the adapter
+verbatim with a warning instead of rejecting the registry, so the *next* new kind will not
+break 0.4.0+ consumers. **Breaking for older adapters:** every adapter before 0.4.0 (including
+the `stable` one) fails to parse this registry (`literal_error` on `models.85.kind`) and
+`load()` falls back to its next source. Promote only after every consumer pins 0.4.0+.
+Checked: with the Jev entry removed, the older kinds read byte-identical through the `stable`
+adapter and the new one. Also fixed the stale `__version__` (was `0.2.0`).
+
+**Added provider** `typesafe`: `base_url` `https://api.typesafe.ai`, `key_env`
+`TYPESAFE_API_KEY`, `pydantic_ai_prefix` `typesafe` (`pydantic-ai-slim[typesafe]`).
+
+**Added model**
+
+| id | kind | api_model_id | aliases | price (USD / 1M) | source |
+|---|---|---|---|---|---|
+| `jev-1.13` | decision | `jev-1.13.0` | `jev-latest` | in **0.042** · out **0** (output is free) · cached null | docs.typesafe.ai/models (read 2026-09-28: "$42 / $0.042" per Btok / Mtok, charged per input token) |
+
+Limits from docs.typesafe.ai/models and /api (read 2026-09-28): 64k tokens per request (state +
+all questions), 32k for state + the longest question, up to 255 options per choice, up to 10
+levels per score; text-only input; endpoint `POST /v1/systemone`; `GET /v1/models` lists
+aliases. `jev-preview` currently points at `jev-1.13.0` too and is not recorded (it moves ahead
+of `jev-latest` whenever a preview build exists). When Jev 1.14 ships, move `jev-latest` to the
+new entry. `allows_temperature: false`: Jev has no sampling parameters (pydantic-ai ignores
+them rather than the API returning 400).
+
 ## 2026-09-24 — Claude Opus 5.5, GPT-6 Sol + Luna, Claude cached rates, GLM OpenRouter slug (v0.3.2 → v0.3.3, facts only, no schema change)
 
 85 models (57 chat, 5 embedding, 10 image_gen, 13 realtime), 67 migrations. Every figure was read

@@ -13,7 +13,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 logger = logging.getLogger(__name__)
 
-Kind = Literal["chat", "realtime", "embedding", "image_gen"]
+Kind = Literal["chat", "realtime", "embedding", "image_gen", "decision"]
 Status = Literal["active", "deprecated", "retired"]
 Reasoning = Literal[
     "adaptive",
@@ -24,6 +24,8 @@ Reasoning = Literal[
     "glm_thinking",
     "none",
 ]
+
+_KNOWN_KINDS = frozenset(["chat", "realtime", "embedding", "image_gen", "decision"])
 
 _KNOWN_REASONING = frozenset(
     ["adaptive", "anthropic_budget", "openai_effort", "google_budget",
@@ -63,9 +65,10 @@ class PricingVariant(_Frozen):
 class Pricing(_Frozen):
     """CURRENT USD list price. Historical rates live in git history, not here.
 
-    Three shapes share this model, one per model kind:
+    Three shapes share this model:
 
-    * token (chat/embedding) — ``input_per_1m`` / ``output_per_1m``
+    * token (chat/embedding/decision) — ``input_per_1m`` / ``output_per_1m``
+      (decision models bill input only, so ``output_per_1m`` is 0)
     * image — ``per_image``
     * realtime — ``audio_input_per_1m`` / ``audio_output_per_1m`` /
       ``text_input_per_1m`` / ``text_output_per_1m``, since audio and text
@@ -115,7 +118,9 @@ class Model(_Frozen):
     name: str
     description: str = ""
     provider: str
-    kind: Kind = "chat"
+    # A known Kind, or a kind newer than this adapter (kept verbatim, with a
+    # warning) so filtering by the kinds you know keeps working.
+    kind: Kind | str = "chat"
     api_model_id: str
     aliases: tuple[str, ...] = ()
     reasoning: Reasoning = "none"
@@ -127,8 +132,28 @@ class Model(_Frozen):
     max_reference_images: int | None = None
     voices: tuple[str, ...] | None = None
     modalities: tuple[str, ...] | None = None
+    # Decision models (kind == "decision"); None elsewhere.
+    question_types: tuple[str, ...] | None = None
+    max_request_tokens: int | None = None
+    max_state_question_tokens: int | None = None
+    max_choice_options: int | None = None
+    max_score_levels: int | None = None
     status: Status = "active"
     pricing: Pricing | None = None
+
+    @field_validator("kind", mode="before")
+    @classmethod
+    def _keep_unknown_kind(cls, value: Any) -> Any:
+        """A registry newer than this adapter may carry a kind we do not know.
+        Keep it verbatim (never recast it as a kind consumers act on) and
+        load the rest of the registry instead of failing."""
+        if isinstance(value, str) and value not in _KNOWN_KINDS:
+            logger.warning(
+                "Unknown model kind %r in registry — loaded but not a known "
+                "Kind. Upgrade ai-model-registry to use it.",
+                value,
+            )
+        return value
 
     @field_validator("reasoning", mode="before")
     @classmethod

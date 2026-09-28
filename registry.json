@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "schema_minor": 1,
-  "generated_at": "2026-09-24T12:00:00Z",
+  "schema_minor": 2,
+  "generated_at": "2026-09-28T12:00:00Z",
   "providers": {
     "anthropic": {
       "name": "Anthropic",
@@ -32,6 +32,12 @@
       "base_url": "https://api.z.ai/api/paas/v4",
       "key_env": "ZAI_API_KEY",
       "pydantic_ai_prefix": null
+    },
+    "typesafe": {
+      "name": "TypeSafe",
+      "base_url": "https://api.typesafe.ai",
+      "key_env": "TYPESAFE_API_KEY",
+      "pydantic_ai_prefix": "typesafe"
     },
     "local": {
       "name": "Local",
@@ -205,7 +211,7 @@
     {
       "id": "gemini-3.1-pro-preview",
       "name": "Gemini 3.1 Pro",
-      "description": "Google's flagship (preview — no stable Pro id exists). Thinking budget.",
+      "description": "Google's flagship (preview \u2014 no stable Pro id exists). Thinking budget.",
       "provider": "google",
       "kind": "chat",
       "api_model_id": "gemini-3.1-pro-preview",
@@ -679,7 +685,7 @@
     {
       "id": "openai_gpt_image_2_5_sunburst",
       "name": "GPT Image 2.5 Sunburst",
-      "description": "OpenAI's most capable image generation and editing model (released 2026-09-08). Quality low/medium/high/xhigh/max/auto; Images API generations + edits, or the Responses image_generation tool. Token-priced: text input $5/1M (cached $1.25), image input $8/1M (cached $2), image output $30/1M — same rates as GPT Image 2; per-image price not published, so pricing is null.",
+      "description": "OpenAI's most capable image generation and editing model (released 2026-09-08). Quality low/medium/high/xhigh/max/auto; Images API generations + edits, or the Responses image_generation tool. Token-priced: text input $5/1M (cached $1.25), image input $8/1M (cached $2), image output $30/1M \u2014 same rates as GPT Image 2; per-image price not published, so pricing is null.",
       "provider": "openai",
       "kind": "image_gen",
       "api_model_id": "gpt-image-2.5-sunburst",
@@ -2240,6 +2246,41 @@
         "text_input_per_1m": 0.5,
         "text_output_per_1m": 2.0,
         "cached_input_per_1m": 3.0
+      }
+    },
+    {
+      "id": "jev-1.13",
+      "name": "Jev 1.13",
+      "description": "TypeSafe's System One decision model. Not a chat model: it evaluates a text/JSON `state` against typed questions and returns calibrated answers, never text. Question types: noul (yes/no -> probability of yes), choice (up to 255 options -> chosen key, confidence and per-option probabilities), score (2-10 ordered rubric levels -> probability-weighted score). Text only; sampling parameters are ignored. Endpoint POST /v1/systemone.",
+      "provider": "typesafe",
+      "kind": "decision",
+      "api_model_id": "jev-1.13.0",
+      "aliases": [
+        "jev-latest"
+      ],
+      "reasoning": "none",
+      "allows_temperature": false,
+      "responses_api": false,
+      "server_web_tools": false,
+      "vision": false,
+      "needs_pdf_rasterization": false,
+      "max_reference_images": null,
+      "voices": null,
+      "modalities": null,
+      "question_types": [
+        "noul",
+        "choice",
+        "score"
+      ],
+      "max_request_tokens": 64000,
+      "max_state_question_tokens": 32000,
+      "max_choice_options": 255,
+      "max_score_levels": 10,
+      "status": "active",
+      "pricing": {
+        "input_per_1m": 0.042,
+        "output_per_1m": 0.0,
+        "cached_input_per_1m": null
       }
     }
   ],

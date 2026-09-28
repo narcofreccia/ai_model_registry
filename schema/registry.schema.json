@@ -48,7 +48,7 @@
         "name": { "type": "string", "description": "Human-readable provider name." },
         "base_url": {
           "type": ["string", "null"],
-          "description": "OpenAI-compatible endpoint base URL, or null when the provider is reached through its native pydantic-ai prefix."
+          "description": "Endpoint base URL. With pydantic_ai_prefix null it is an OpenAI-compatible endpoint the consumer must call directly; with a prefix set it is informational only (the provider's native API root, which the pydantic-ai provider already knows), and null is allowed."
         },
         "key_env": {
           "type": ["string", "null"],
@@ -79,8 +79,8 @@
         "description": { "type": "string", "description": "Short human-facing blurb." },
         "provider": { "type": "string", "description": "Key into the providers map." },
         "kind": {
-          "enum": ["chat", "realtime", "embedding", "image_gen"],
-          "description": "What the model does."
+          "enum": ["chat", "realtime", "embedding", "image_gen", "decision"],
+          "description": "What the model does. `decision` (schema_minor 2) = structured-decision models that answer typed questions about a state with probabilities and never generate text. Consumers must ignore kinds they do not handle."
         },
         "api_model_id": {
           "type": "string",
@@ -132,6 +132,32 @@
           "items": { "type": "string" },
           "description": "Realtime/audio models: the modality tokens the provider's realtime session accepts, spelled exactly as the API wants them (OpenAI [\"text\",\"audio\"], Google Live [\"AUDIO\"]). Optional; null/absent when not applicable."
         },
+        "question_types": {
+          "type": ["array", "null"],
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true,
+          "description": "Decision models: the question type tokens the API accepts, spelled as the API wants them (TypeSafe [\"noul\",\"choice\",\"score\"]). Open vocabulary. Optional; null/absent on other kinds."
+        },
+        "max_request_tokens": {
+          "type": ["integer", "null"],
+          "minimum": 1,
+          "description": "Decision models: token budget for one request (state plus every question). Optional; null/absent when not applicable."
+        },
+        "max_state_question_tokens": {
+          "type": ["integer", "null"],
+          "minimum": 1,
+          "description": "Decision models: token budget for the state plus the single longest question. Optional; null/absent when not applicable."
+        },
+        "max_choice_options": {
+          "type": ["integer", "null"],
+          "minimum": 1,
+          "description": "Decision models: most options one choice question may carry. Optional; null/absent when not applicable."
+        },
+        "max_score_levels": {
+          "type": ["integer", "null"],
+          "minimum": 1,
+          "description": "Decision models: most ordered levels one score question may carry. Optional; null/absent when not applicable."
+        },
         "status": {
           "enum": ["active", "deprecated", "retired"],
           "description": "Lifecycle. Deprecated/retired ids stay in the registry so old saved ids keep resolving; pair them with a migration."
@@ -143,7 +169,7 @@
             { "$ref": "#/$defs/realtime_pricing" },
             { "type": "null" }
           ],
-          "description": "CURRENT USD list price only. Null when no verified price is known — never guess. Git history is the price audit trail; this file never carries historical rates."
+          "description": "CURRENT USD list price only. Decision models use the token shape (input_per_1m, with output_per_1m 0 when output is free). Null when no verified price is known — never guess. Git history is the price audit trail; this file never carries historical rates."
         }
       }
     },
