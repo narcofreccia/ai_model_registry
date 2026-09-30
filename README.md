@@ -14,6 +14,8 @@ live in [MAINTAINING.md](MAINTAINING.md).
 | `registry.json` | the single artifact consumers read (the whole contract) |
 | `schema/registry.schema.json` | JSON Schema draft 2020-12 |
 | `scripts/validate.py` | schema + invariant checks (CI gate) |
+| `scripts/release.py` | tag + promote to `stable` with every safety check ([MAINTAINING.md](MAINTAINING.md)) |
+| `scripts/consumers.py`, `scripts/update_consumers.py` | which repos pin this package; move them all to one commit |
 | `src/ai_model_registry/` | optional Python adapter (`pip install`-able) |
 
 ## Consuming

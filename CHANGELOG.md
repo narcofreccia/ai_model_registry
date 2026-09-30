@@ -2,7 +2,69 @@
 
 Dates are the promotion date (when `stable` was moved), not the merge date.
 
-## Unreleased (not promoted) — `decision` kind + TypeSafe Jev 1.13 (v0.3.3 → v0.4.0, schema_minor 1 → 2)
+## 2026-09-30 — GPT-6.1 Sol, Claude Sonnet 5.5, Google successors + deprecations, release tooling (v0.4.0 → v0.4.1, facts only, no schema change)
+
+90 models (60 chat, 1 decision, 6 embedding, 10 image_gen, 13 realtime), 71 migrations, 7 providers.
+Every figure was read from the provider's own page on 2026-09-30.
+
+**Added**
+
+| id | kind | api_model_id | price (USD / 1M) | source |
+|---|---|---|---|---|
+| `gpt-6.1-sol` | chat | `gpt-6.1-sol` | in 2 · cached **0.10** · out 10; variant `long_context_gt_272k` 4 / 0.20 / 15 | developers.openai.com/api/docs/pricing + /models/gpt-6.1-sol (released 2026-09-29) |
+| `claude-sonnet-5-5` | chat | `claude-sonnet-5-5` | in 2 · cached 0.20 · out 10 | platform.claude.com/docs/en/about-claude/pricing + /models/sonnet-5-5/overview (released 2026-09-28) |
+| `gemini-3.5-flash-lite` | chat | `gemini-3.5-flash-lite` | in 0.30 · cached 0.03 · out 2.50 | ai.google.dev/gemini-api/docs/pricing + /models/gemini-3.5-flash-lite (stable since 2026-07-21) |
+| `gemini-embedding-2` | embedding | `gemini-embedding-2` | text in 0.20 · out 0; variants `image_input` 0.45, `audio_input` 6.50, `video_input` 12.00 | ai.google.dev/gemini-api/docs/pricing + /models/gemini-embedding-2 (stable since 2026-04-22) |
+
+Capability notes. Neither new OpenAI/Anthropic model has the same API surface as its predecessor:
+- `gpt-6.1-sol` behaves like `gpt-6-astra`, not `gpt-6-sol`: reasoning effort is `low`..`max` (no
+  `none`/`minimal`), so temperature is never accepted; tool calling needs the Responses API (Chat
+  Completions works without tools). Cached input is 5% of input (gpt-6-sol: 10%).
+- `claude-sonnet-5-5` behaves like `claude-opus-5-5`, except thinking is on by default rather than
+  always on: `thinking: {"type": "disabled"}` and manual `budget_tokens` return 400 (use
+  `{"type": "between_tools"}` at low/medium/high effort). Forced `tool_choice` any/tool, `computer_20251124`
+  and non-default temperature/top_p/top_k all return 400. Default effort `high`.
+- `gemini-3.5-flash-lite` uses `thinking_level` (minimal default, low/medium/high), recorded as
+  `google_budget` like `gemini-3.8-flash`; legacy `thinking_budget` still works but not in the same request.
+- `gemini-embedding-2` has no `task_type` field; the task goes in the prompt.
+
+**Deprecated / retired** (Google's deprecations page, ai.google.dev/gemini-api/docs/deprecations)
+
+| model | status | migration | shutdown |
+|---|---|---|---|
+| `models/text-embedding-004` | active → **retired** | → `gemini-embedding-2` | 2026-01-14 (passed) |
+| `gemini-3.1-flash-lite` | active → deprecated | → `gemini-3.5-flash-lite` | 2027-05-07 |
+| `gemini-3.1-flash-live-preview` | active → deprecated | → `gemini-3.8-live` | none announced |
+| `gemini-2.5-flash-native-audio-preview-12-2025` | active → deprecated | → `gemini-3.8-live` | none announced |
+
+The existing chains follow: `gemini-2.5-flash` → `gemini-3.5-flash-lite`,
+`gemini-2.5-flash-native-audio-preview-09-2025` → `gemini-3.8-live`.
+
+Checked and left alone:
+- `gpt-6-sol` is unchanged. OpenAI calls 6.1 Sol "the newer Sol model" but has not deprecated it.
+- There is no GPT-6 Terra (`/models/gpt-6-terra` returns 404).
+- `claude-sonnet-5` is now listed as legacy ("not sooner than June 30, 2027") but is not deprecated.
+- Add `claude-sonnet-5` → `claude-sonnet-5-5` and `gpt-6-sol` → `gpt-6.1-sol` once they are deprecated.
+- OpenAI fixed an image-encoding bug that degraded image understanding in gpt-6-sol/luna (changelog 2026-09-25).
+  No registry change.
+- Pre-existing mismatch: Anthropic still lists claude-opus-4-8/4-7/4-6/4-5 and claude-sonnet-4-6/4-5 as
+  Active, while this registry marks them `deprecated`. Unchanged.
+
+**Tooling.**
+- `consumers.json` (gitignored; shape in `consumers.example.json`) lists the repos that pin this package.
+- `scripts/consumers.py status` shows each repo's pin and whether its adapter can read `stable`.
+- `scripts/update_consumers.py` rewrites every repo's pin (and vendored snapshot) to one commit. It edits
+  only; nothing is committed.
+- `scripts/release.py` runs the checks, refuses to strand consumers, tags `v<version>`, runs the
+  promote job and verifies.
+- There are project skills `/release-ai-registry` and `/update-ai-registry-consumers`.
+
+## 2026-09-28 — `decision` kind + TypeSafe Jev 1.13 (v0.3.3 → v0.4.0, schema_minor 1 → 2)
+
+**Promoted before the consumers were bumped.** `stable` moved to this commit on 2026-09-28 while six
+consumers still pinned `9a1d738` (adapter 0.3.3). The four that fetch `stable` at runtime (tide_backend,
+ndr_backend, ndr_backend_ai_assistant, tide-voice-agent) fell back to cached/packaged data until they were
+re-pinned on 2026-09-30. `scripts/release.py` now refuses a promotion that would do this.
 
 86 models (57 chat, 1 decision, 5 embedding, 10 image_gen, 13 realtime), 67 migrations, 7 providers.
 Closes the 0.3.3 "shape gap" TODO, via TypeSafe's own API rather than OpenRouter.

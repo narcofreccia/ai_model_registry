@@ -17,7 +17,6 @@ TIDE_SHARE_CHAT_ORDER = [
     "gpt-5.6-luna",
     "gemini-3.1-pro-preview",
     "gemini-3.5-flash",
-    "gemini-3.1-flash-lite",
     "glm-5.3-flash",
     "moonshotai/kimi-k3",
     "deepseek/deepseek-v4-pro",
@@ -28,6 +27,9 @@ TIDE_SHARE_CHAT_ORDER = [
     "claude-opus-5-5",
     "gpt-6-sol",
     "gpt-6-luna",
+    "gpt-6.1-sol",
+    "claude-sonnet-5-5",
+    "gemini-3.5-flash-lite",
 ]
 
 
@@ -44,7 +46,7 @@ def test_active_chat_models_keep_tide_share_order(registry):
 def test_models_by_kind_and_provider(registry):
     by_kind = registry.models_by_kind()
     assert set(by_kind) == {"chat", "embedding", "image_gen", "realtime", "decision"}
-    assert len(registry.models_by_kind("embedding")) == 5
+    assert len(registry.models_by_kind("embedding")) == 6
     assert [m.id for m in registry.models_by_provider("zai")] == ["glm-5.3-flash"]
     assert "anthropic" in registry.models_by_provider()
 
@@ -186,10 +188,13 @@ def test_realtime_migrations_chain_to_the_flagship(registry):
     assert registry.resolve_migration("gpt-realtime-1.5") == "gpt-realtime-2.1"
     assert registry.resolve_migration("gpt-4o-realtime-preview") == "gpt-realtime-2.1"
     assert registry.resolve_migration("gpt-4o-mini-realtime-preview") == "gpt-realtime-2.1"
-    assert (
-        registry.resolve_migration("gemini-2.5-flash-native-audio-preview-09-2025")
-        == "gemini-2.5-flash-native-audio-preview-12-2025"
-    )
+    # Google names gemini-3.8-live as the replacement for both Live previews
+    for preview in (
+        "gemini-2.5-flash-native-audio-preview-09-2025",
+        "gemini-2.5-flash-native-audio-preview-12-2025",
+        "gemini-3.1-flash-live-preview",
+    ):
+        assert registry.resolve_migration(preview) == "gemini-3.8-live"
 
 
 def test_deprecated_realtime_ids_stay_callable_verbatim(registry):

@@ -6,3 +6,7 @@ build/
 dist/
 .pytest_cache/
 .DS_Store
+
+# Local list of repos that consume this package (machine-specific paths).
+# Shape: consumers.example.json. Regenerate: python3 scripts/consumers.py discover --write
+consumers.json

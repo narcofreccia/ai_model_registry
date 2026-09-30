@@ -109,18 +109,42 @@ without one.
 ## Promote to `stable`
 
 Consumers read the `stable` tag, so a merge to `main` changes nothing until promotion.
+In Claude Code, `/release-ai-registry` runs the whole thing, deprecation review included.
 
-1. Merge to `main` with CI green.
-2. Add the `CHANGELOG.md` entry for the promotion (date + what changed).
-3. Trigger the promote run. Either GitHub → Actions → **CI** → *Run workflow* →
-   `promote: true`, or from the CLI:
+1. Deprecation review: check every `active` id against the provider deprecations pages
+   (see `.claude/skills/release-ai-registry/SKILL.md` for the URLs) and apply what changed.
+2. Bump `version` in `pyproject.toml` and `__version__` in `src/ai_model_registry/__init__.py`.
+3. Date the top `CHANGELOG.md` section with the promotion date and name the version:
+   `## YYYY-MM-DD — summary (v0.4.0 → v0.4.1, ...)`. Commit on `main`.
+4. Release:
 
    ```bash
-   gh workflow run ci.yml --ref main -f promote=true
-   gh run watch "$(gh run list --workflow=ci.yml --branch=main --limit=1 --json databaseId --jq '.[0].databaseId')"
+   .venv/bin/python scripts/release.py --dry-run   # checks only, prints the publish commands
+   .venv/bin/python scripts/release.py             # tag v<version>, push, promote, verify
    ```
 
-   The job re-runs validation and only then force-moves the tag.
-4. Verify: `curl -s https://raw.githubusercontent.com/narcofreccia/ai_model_registry/stable/registry.json | head`.
+   It checks, in order: on main, clean, not behind origin; versions agree; the tag is
+   unused; the CHANGELOG is dated; validate + pytest; **no consumer in `consumers.json`
+   pins an adapter that cannot read the new registry**. Then it tags, pushes, runs
+   `gh workflow run ci.yml -f promote=true`, watches it, and checks that `stable` moved.
+   The CI job re-validates before it force-moves the tag.
+5. Move the consumers to the new commit: `scripts/update_consumers.py` (below).
 
 Consumers pinning a SHA (tide_share's desktop builds) are unaffected until they bump it.
+
+## Consumers
+
+`consumers.json` (gitignored, machine-specific paths; shape in `consumers.example.json`)
+lists every repo that pins this package, with its pin files, vendored snapshot, venv
+python and test command.
+
+```bash
+.venv/bin/python scripts/consumers.py status              # pin + adapter per repo; can it read `stable`?
+.venv/bin/python scripts/consumers.py discover --write    # pick up repos that started pinning us
+.venv/bin/python scripts/update_consumers.py --dry-run    # pin -> commit `stable` points at
+.venv/bin/python scripts/update_consumers.py --verify     # ...rewrite, reinstall, run their tests
+```
+
+`update_consumers.py` only edits files: the pin line(s) and, where one is vendored, the
+snapshot, which always moves with the pin. Committing and deploying each repo is manual.
+In Claude Code: `/update-ai-registry-consumers`.

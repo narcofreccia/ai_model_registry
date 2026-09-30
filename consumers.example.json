@@ -1,0 +1,15 @@
+{
+  "_comment": "Copy to consumers.json (gitignored). Paths are relative to this repo. `python` and `test_cwd` are relative to the consumer's `path`; `test` runs as `<python> <test...>` from `test_cwd`.",
+  "consumers": [
+    {
+      "name": "example_app",
+      "path": "../example_app",
+      "pin_files": ["requirements.txt", "pyproject.toml"],
+      "snapshot": "example_app/model_registry_snapshot.json",
+      "python": "venv/bin/python",
+      "test_cwd": ".",
+      "test": ["-m", "pytest", "-q"],
+      "followups": ["commit the pin and the snapshot together"]
+    }
+  ]
+}
