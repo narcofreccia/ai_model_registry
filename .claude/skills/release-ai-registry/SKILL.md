@@ -48,10 +48,12 @@ It stops on any of the following. Fix the cause; don't work around it:
 - tag `v<version>` already exists
 - the CHANGELOG head is undated
 - validate or pytest fails
-- **a consumer in consumers.json pins an adapter that cannot read this registry.** Bump
-  those consumers first (`/update-ai-registry-consumers` with the last compatible SHA). Pass
-  `--force-lagging-consumers` only if the user explicitly accepts that they fall back to
-  stale data.
+- **the release would newly break a consumer:** its *committed* pin (HEAD, not the working
+  tree) can read the current `stable` but not this registry. Bump those consumers first
+  (`/update-ai-registry-consumers` with the last compatible SHA), then have the user commit
+  and deploy them. Pass `--force-lagging-consumers` only if the user explicitly accepts
+  that they fall back to stale data. Consumers that already can't read the current `stable`
+  are listed, not blocking: tell the user, since they need a bump + deploy either way.
 
 Pushing and promoting are outward-facing: always show the dry-run output and get a yes first.
 

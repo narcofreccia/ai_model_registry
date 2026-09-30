@@ -4,7 +4,7 @@
 The list lives in `consumers.json` at the repo root (gitignored: the paths are
 machine-specific; the shape is in `consumers.example.json`).
 
-    python3 scripts/consumers.py status              # pins, adapter version, can it read `stable`?
+    python3 scripts/consumers.py status              # committed pin, adapter version, can it read `stable`?
     python3 scripts/consumers.py discover            # scan sibling dirs for pins
     python3 scripts/consumers.py discover --write    # ...and add new ones to consumers.json
 
@@ -68,12 +68,31 @@ def rewrite_pins(text: str, new_ref: str) -> tuple[str, int]:
     return PIN_RE.subn(lambda m: m.group(1) + new_ref, text)
 
 
-def consumer_pins(consumer: Consumer) -> dict[str, list[str]]:
+def consumer_pins(consumer: Consumer, committed: bool = False) -> dict[str, list[str]]:
+    """Pins per pin file: the working tree, or with `committed` the repo's HEAD —
+    an uncommitted edit (e.g. from update_consumers.py) is not what runs anywhere."""
     pins: dict[str, list[str]] = {}
     for rel in consumer.pin_files:
-        file = consumer.root / rel
-        pins[rel] = read_pins(file.read_text()) if file.exists() else []
+        if committed:
+            result = subprocess.run(["git", "show", f"HEAD:{rel}"], cwd=consumer.root, capture_output=True, text=True)
+            pins[rel] = read_pins(result.stdout) if result.returncode == 0 else []
+        else:
+            file = consumer.root / rel
+            pins[rel] = read_pins(file.read_text()) if file.exists() else []
     return pins
+
+
+def unpushed(consumer: Consumer) -> bool:
+    """HEAD has commits touching a pin file that its upstream branch does not."""
+    result = subprocess.run(
+        ["git", "rev-list", "--count", "@{u}..HEAD", "--", *consumer.pin_files],
+        cwd=consumer.root, capture_output=True, text=True,
+    )
+    return result.returncode == 0 and result.stdout.strip() != "0"
+
+
+def shas_of(pins: dict[str, list[str]]) -> list[str]:
+    return sorted({s for found in pins.values() for s in found})
 
 
 # ---------------------------------------------------------------------------
@@ -132,10 +151,11 @@ def adapter_accepts(sha: str, registry: dict) -> tuple[bool, str]:
 
 
 def lagging(consumers: list[Consumer], registry: dict) -> list[tuple[Consumer, str, str]]:
-    """Consumers whose pinned adapter cannot parse `registry`: (consumer, sha, why)."""
+    """Consumers whose *committed* pin cannot parse `registry`: (consumer, sha, why).
+    Uncommitted pin edits don't count — they are not what any deploy runs."""
     out = []
     for consumer in consumers:
-        for sha in sorted({s for pins in consumer_pins(consumer).values() for s in pins}):
+        for sha in shas_of(consumer_pins(consumer, committed=True)):
             ok, why = adapter_accepts(sha, registry)
             if not ok:
                 out.append((consumer, sha, why))
@@ -156,10 +176,10 @@ def cmd_status(_: argparse.Namespace) -> int:
             print(f"{consumer.name:26} MISSING  {consumer.root}")
             bad += 1
             continue
-        pins = consumer_pins(consumer)
-        shas = sorted({s for found in pins.values() for s in found})
+        pins = consumer_pins(consumer, committed=True)
+        shas = shas_of(pins)
         if not shas:
-            print(f"{consumer.name:26} no pin found in {', '.join(consumer.pin_files)}")
+            print(f"{consumer.name:26} no committed pin found in {', '.join(consumer.pin_files)}")
             bad += 1
             continue
         for sha in shas:
@@ -168,9 +188,14 @@ def cmd_status(_: argparse.Namespace) -> int:
             bad += not ok
             print(f"{consumer.name:26} {mark:2} {sha[:10]}  adapter {adapter_version(sha) or '?':8} {why}")
         if len(shas) > 1:
-            print(f"{'':26}    pin files disagree: {pins}")
+            print(f"{'':26}    committed pin files disagree: {pins}")
+        working = shas_of(consumer_pins(consumer))
+        if working != shas:
+            print(f"{'':26}    uncommitted edit -> {', '.join(s[:10] for s in working)} (not counted until committed)")
+        elif unpushed(consumer):
+            print(f"{'':26}    committed but not pushed")
     if bad:
-        print(f"\n{bad} consumer(s) cannot read `stable` — run scripts/update_consumers.py")
+        print(f"\n{bad} consumer(s) cannot read `stable` at their committed pin — run scripts/update_consumers.py, then commit + deploy")
     return 1 if bad else 0
 
 

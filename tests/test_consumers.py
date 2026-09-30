@@ -63,3 +63,18 @@ def test_adapter_accepts_checks_kind_literal(consumers, monkeypatch):
     assert not ok and "decision" in why
     assert consumers.adapter_accepts("new", {"models": [{"kind": "someday"}]})[0]
     assert not consumers.adapter_accepts("missing", chat_only)[0]
+
+
+def test_committed_pins_ignore_uncommitted_edits(consumers, tmp_path):
+    """The release gate reads HEAD: an uncommitted bump is not what any deploy runs."""
+    import subprocess
+
+    line = "ai-model-registry @ git+https://github.com/narcofreccia/ai_model_registry.git@{}\n"
+    (tmp_path / "requirements.txt").write_text(line.format(OLD))
+    for cmd in (["init", "-q"], ["add", "."], ["-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "pin"]):
+        subprocess.run(["git", *cmd], cwd=tmp_path, check=True)
+    (tmp_path / "requirements.txt").write_text(line.format(NEW))
+
+    consumer = consumers.Consumer(name="t", path=str(tmp_path), pin_files=["requirements.txt"])
+    assert consumers.consumer_pins(consumer) == {"requirements.txt": [NEW]}
+    assert consumers.consumer_pins(consumer, committed=True) == {"requirements.txt": [OLD]}

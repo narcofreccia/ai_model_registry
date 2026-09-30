@@ -27,6 +27,7 @@ from consumers import (
     adapter_accepts,
     adapter_version,
     consumer_pins,
+    shas_of,
     fetch_tags,
     git,
     load_consumers,
@@ -137,7 +138,7 @@ def main() -> int:
             print("    !! repo not found")
             results.append((consumer, "missing", None))
             continue
-        before = sorted({s for pins in consumer_pins(consumer).values() for s in pins})
+        before = shas_of(consumer_pins(consumer))
         if is_dirty(consumer):
             print("    note: working tree has uncommitted changes (left as they are)")
         touched = update(consumer, sha, registry_bytes, args.dry_run)

@@ -8,8 +8,10 @@ Steps, each one stopping the release on failure:
   1. preflight  on main, clean tree, not behind origin/main, versions agree,
                 tag v<version> unused, CHANGELOG top section is v<version> and dated
   2. checks     scripts/validate.py + pytest
-  3. consumers  refuse if a repo in consumers.json pins an adapter that cannot read
-                this registry (override: --force-lagging-consumers)
+  3. consumers  refuse if this release would newly break a repo in consumers.json: its
+                *committed* pin reads the current `stable` but not this registry
+                (uncommitted pin edits don't count; override: --force-lagging-consumers).
+                Repos that are already broken are listed, not blocking.
   4. review     print the active models per provider and ask for confirmation that the
                 deprecation review is done (skip the prompt: --yes)
   5. publish    annotated tag, push main + tag, `gh workflow run ci.yml -f promote=true`,
@@ -28,7 +30,18 @@ import time
 import urllib.request
 from collections import defaultdict
 
-from consumers import CONSUMERS_PATH, RAW_URL, REPO, fetch_tags, git, lagging, load_consumers, remote_ref_sha
+from consumers import (
+    CONSUMERS_PATH,
+    RAW_URL,
+    REPO,
+    adapter_accepts,
+    fetch_tags,
+    git,
+    lagging,
+    load_consumers,
+    remote_ref_sha,
+    show,
+)
 
 PYTHON = REPO / ".venv" / "bin" / "python"
 
@@ -103,20 +116,32 @@ def checks() -> None:
 
 
 def consumer_gate(registry: dict, force: bool) -> None:
+    """Block only consumers this release would *newly* break. One that already cannot
+    read the current `stable` is warned about: promoting doesn't make it worse."""
     step("consumers")
     if not CONSUMERS_PATH.exists():
         print("   consumers.json not found — cannot check who would break (see consumers.example.json)")
         return
     behind = lagging(load_consumers(), registry)
     if not behind:
-        print("   every consumer's pinned adapter can read this registry")
+        print("   every consumer's committed pin can read this registry")
         return
+    current = json.loads(show(remote_ref_sha("stable"), "registry.json") or "{}")
+    newly = []
     for consumer, sha, why in behind:
-        print(f"   !! {consumer.name}: pinned {sha[:10]} {why}")
+        already = not adapter_accepts(sha, current)[0]
+        print(f"   {'!' if already else '!!'} {consumer.name}: committed pin {sha[:10]} {why}"
+              + ("  (already can't read the current `stable`)" if already else ""))
+        if not already:
+            newly.append(consumer.name)
+    if not newly:
+        print("   none of them is made worse by this release — fix them with scripts/update_consumers.py,\n"
+              "   then commit + deploy each repo")
+        return
     if not force:
         die(
-            "those consumers would silently fall back to stale data once this is `stable`.\n"
-            "   Bump them to an adapter that reads it first (scripts/update_consumers.py --sha <commit>),\n"
+            f"{', '.join(newly)} would silently fall back to stale data once this is `stable`.\n"
+            "   Bump them first (scripts/update_consumers.py --sha <commit>), then commit + deploy each,\n"
             "   or pass --force-lagging-consumers."
         )
     print("   --force-lagging-consumers: continuing anyway")

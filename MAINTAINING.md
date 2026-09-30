@@ -124,8 +124,10 @@ In Claude Code, `/release-ai-registry` runs the whole thing, deprecation review 
    ```
 
    It checks, in order: on main, clean, not behind origin; versions agree; the tag is
-   unused; the CHANGELOG is dated; validate + pytest; **no consumer in `consumers.json`
-   pins an adapter that cannot read the new registry**. Then it tags, pushes, runs
+   unused; the CHANGELOG is dated; validate + pytest; **the release newly breaks no consumer
+   in `consumers.json`**: judged on each repo's *committed* pin, so an uncommitted bump
+   doesn't count, and repos that already can't read the current `stable` are listed
+   without blocking. Then it tags, pushes, runs
    `gh workflow run ci.yml -f promote=true`, watches it, and checks that `stable` moved.
    The CI job re-validates before it force-moves the tag.
 5. Move the consumers to the new commit: `scripts/update_consumers.py` (below).
