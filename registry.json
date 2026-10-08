@@ -591,7 +591,7 @@
       "pricing": {
         "input_per_1m": 2.0,
         "output_per_1m": 10.0,
-        "cached_input_per_1m": 0.2
+        "cached_input_per_1m": 0.1
       }
     },
     {
@@ -615,6 +615,38 @@
         "input_per_1m": 0.3,
         "output_per_1m": 2.5,
         "cached_input_per_1m": 0.03
+      }
+    },
+    {
+      "id": "claude-haiku-5-5",
+      "name": "Claude Haiku 5.5",
+      "description": "Successor to Claude Haiku 4.5 for high-volume, latency-sensitive work (released 2026-10-07). 1M context, 128K max output. Adaptive thinking on by default (default effort medium); budget_tokens rejected; non-default temperature/top_p/top_k rejected; assistant prefill rejected; no server-side refusal fallback. Priced by prompt length: prompts over 100K tokens pay the higher rate card.",
+      "provider": "anthropic",
+      "kind": "chat",
+      "api_model_id": "claude-haiku-5-5",
+      "aliases": [],
+      "reasoning": "adaptive",
+      "allows_temperature": false,
+      "responses_api": false,
+      "server_web_tools": false,
+      "vision": true,
+      "needs_pdf_rasterization": false,
+      "max_reference_images": null,
+      "voices": null,
+      "status": "active",
+      "pricing": {
+        "input_per_1m": 0.1,
+        "output_per_1m": 0.5,
+        "cached_input_per_1m": 0.01,
+        "variants": [
+          {
+            "condition": "long_context_gt_100k",
+            "input_per_1m": 0.5,
+            "output_per_1m": 2.5,
+            "cached_input_per_1m": 0.05,
+            "note": "Prompts with more than 100K input tokens: 5x input, output and cache rates."
+          }
+        ]
       }
     },
     {
@@ -1799,7 +1831,8 @@
         "audio_output_per_1m": 20.0,
         "text_input_per_1m": 0.6,
         "text_output_per_1m": 2.4,
-        "cached_input_per_1m": 0.06
+        "cached_input_per_1m": 0.06,
+        "cached_audio_input_per_1m": 0.3
       }
     },
     {

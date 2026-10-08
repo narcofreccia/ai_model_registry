@@ -30,6 +30,7 @@ TIDE_SHARE_CHAT_ORDER = [
     "gpt-6.1-sol",
     "claude-sonnet-5-5",
     "gemini-3.5-flash-lite",
+    "claude-haiku-5-5",
 ]
 
 

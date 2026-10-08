@@ -2,6 +2,37 @@
 
 Dates are the promotion date (when `stable` was moved), not the merge date.
 
+## Unreleased — Claude Haiku 5.5, Sonnet 5.5 cache rate, `gpt-realtime-2.1-mini` cached audio rate (facts only)
+
+**Added**
+
+| id | kind | api_model_id | price (USD / 1M) | source |
+|---|---|---|---|---|
+| `claude-haiku-5-5` | chat | `claude-haiku-5-5` | in 0.10 · cached 0.01 · out 0.50; variant `long_context_gt_100k` 0.50 / 0.05 / 2.50 | platform.claude.com/docs/en/about-claude/pricing + /models/haiku-5-5/overview, read 2026-10-08 (released 2026-10-07) |
+
+`claude-haiku-5-5` is not a drop-in for `claude-haiku-4-5`: `reasoning` is `adaptive` (no
+`budget_tokens`, default effort `medium`), and `allows_temperature` is `false`. It is priced by
+prompt length, which is new for a Claude model: a prompt over 100K tokens is billed at the higher
+card for the whole request. That uses the new `long_context_gt_100k` condition token (open
+vocabulary, no schema change). `server_web_tools: false` matches `claude-haiku-4-5`; the
+docs don't name Haiku 5.5 for the dynamic-filtering web tools. `claude-haiku-4-5` stays
+`active`: the deprecations page lists it Active, retirement not sooner than 2026-10-15.
+
+**Fixed:** `claude-sonnet-5-5` `cached_input_per_1m` 0.20 → **0.10**. Anthropic prices cache
+hits on Sonnet 5.5 (and Opus 5.5) at 0.05× base input, not the standard 0.1×. The entry used
+the standard multiplier. Source: platform.claude.com/docs/en/about-claude/pricing +
+/models/sonnet-5-5/overview, read 2026-10-08.
+
+Re-checked, unchanged: `gpt-6.1-sol` (2 / 0.10 / 10, `long_context_gt_272k` 4 / 0.20 / 15;
+developers.openai.com/api/docs/models/gpt-6.1-sol, read 2026-10-08). `claude-opus-5-5` cached 0.20.
+
+**Fixed:** `gpt-realtime-2.1-mini` gains `cached_audio_input_per_1m: 0.30`. OpenAI prices its
+cached input per axis — cached text **0.06**, cached audio **0.30** — and the entry only
+carried the text figure, so a consumer billing realtime sessions from `cached_input_per_1m`
+alone under-charged cached audio 5×. Source: developers.openai.com/api/docs/pricing,
+read 2026-10-03. Not changed: `gemini-3.8-live` / `-extended-thinking` keep
+`cached_input_per_1m: null` (Google publishes no caching row for the Live models).
+
 ## 2026-09-30 — GPT-6.1 Sol, Claude Sonnet 5.5, Google successors + deprecations, release tooling (v0.4.0 → v0.4.1, facts only, no schema change)
 
 90 models (60 chat, 1 decision, 6 embedding, 10 image_gen, 13 realtime), 71 migrations, 7 providers.
