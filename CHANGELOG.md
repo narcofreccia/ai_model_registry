@@ -2,21 +2,54 @@
 
 Dates are the promotion date (when `stable` was moved), not the merge date.
 
-## 2026-10-08 — Claude Haiku 5.5, Sonnet 5.5 cache rate, `gpt-realtime-2.1-mini` cached audio rate (v0.4.1 → v0.4.2, facts only, no schema change)
+## 2026-10-08 — Claude Haiku 5.5, Nano Banana 2.1 + 2 Lite, Google image prices, Sonnet 5.5 cache rate, `gpt-realtime-2.1-mini` cached audio rate (v0.4.1 → v0.4.2, facts only, no schema change)
 
-91 models (61 chat, 1 decision, 6 embedding, 10 image_gen, 13 realtime), 71 migrations, 7 providers.
+93 models (61 chat, 1 decision, 6 embedding, 12 image_gen, 13 realtime), 71 migrations, 7 providers.
 
 Deprecation review (2026-10-08): no status changes. Anthropic, OpenAI and Google list no
 deprecation for any active id, and every OpenRouter slug resolves. Notes only:
-`gemini-live-2.5-flash-native-audio` doesn't appear on Google's deprecations page. Google's
-table may name `gemini-nano-banana-2.1` (released 2026-10-06) as the successor to
-`gemini-3.1-flash-image`, but gives no deprecation notice.
+`gemini-live-2.5-flash-native-audio` doesn't appear on Google's deprecations page.
+Google lists `gemini-nano-banana-2.1` as the replacement for `gemini-3.1-flash-image`, and
+`gemini-3.1-flash-lite-image` as the replacement for `gemini-2.5-flash-image` (shutdown
+2027-03-15). Neither `gemini-3.1-flash-image` nor any other active image id has a shutdown
+date, so `google_imagen_flash` stays `active`.
 
 **Added**
 
-| id | kind | api_model_id | price (USD / 1M) | source |
+| id | kind | api_model_id | price (USD) | source |
 |---|---|---|---|---|
-| `claude-haiku-5-5` | chat | `claude-haiku-5-5` | in 0.10 · cached 0.01 · out 0.50; variant `long_context_gt_100k` 0.50 / 0.05 / 2.50 | platform.claude.com/docs/en/about-claude/pricing + /models/haiku-5-5/overview, read 2026-10-08 (released 2026-10-07) |
+| `claude-haiku-5-5` | chat | `claude-haiku-5-5` | per 1M: in 0.10 · cached 0.01 · out 0.50; variant `long_context_gt_100k` 0.50 / 0.05 / 2.50 | platform.claude.com/docs/en/about-claude/pricing + /models/haiku-5-5/overview, read 2026-10-08 (released 2026-10-07) |
+| `google_imagen_flash_2_1` | image_gen | `gemini-nano-banana-2.1` | per image: 1K 0.0336; `image_size_2k` 0.0504, `image_size_4k` 0.113 | ai.google.dev/gemini-api/docs/pricing + /models/gemini-nano-banana-2.1 + /image-generation, read 2026-10-08 (released 2026-10-06) |
+| `google_imagen_flash_lite` | image_gen | `gemini-3.1-flash-lite-image` | per image: 1K 0.0336 (1K only) | same pages + /models/gemini-3.1-flash-lite-image (released 2026-06-30) |
+
+**Google image models are not interchangeable.** Each one rejects or ignores settings the
+others accept. The limits are in each entry's `description`:
+- `imageSize`: `"512"` works only on `gemini-3.1-flash-image`. Lite is 1K only. 2.1 and Pro take 1K/2K/4K.
+- Aspect ratios: 1:4, 4:1, 1:8 and 8:1 are documented for 2.1 and Flash, not for Pro (Lite unclear).
+- Thinking is always on, with different levels and defaults: medium by default on 2.1, minimal on Flash and Lite.
+- Grounding: Pro has no image search, and Lite has no grounding at all.
+- Video input: not accepted by Pro.
+
+The 2.1 4K price is **0.113**. Google's image-generation guide gives a 2520-token count for 4K,
+which implies $0.0756, the figure some third-party write-ups quote. The pricing page bills 3780
+tokens, so 0.113 is the authoritative figure.
+
+**Fixed**
+- `google_imagen_pro` and `google_imagen_flash` were `pricing: null`. They now carry Google's
+  published per-image prices: `per_image` is the 1K price, plus `image_size_*` variants (open
+  vocabulary, no schema change):
+  - Pro: 1K 0.134, 2K 0.134, 4K 0.24
+  - Flash: 512 0.045, 1K 0.067, 2K 0.101, 4K 0.151
+
+  Consumers that read `get_price()` for these ids now get a number instead of `None`.
+- `google_imagen_flash` `max_reference_images` 3 → **14**. Google allows up to 14 (10 objects +
+  4 characters) on `gemini-3.1-flash-image`.
+- Batch prices (50% off) and the token-level rates are recorded only in the descriptions and
+  on Google's page, not as variants.
+
+Not changed: `google_imagen_flash` keeps the alias `gemini-2.5-flash-image`. That is a
+different model, not a snapshot of 3.1 Flash, but `tide_backend` maps through it. Removing it
+waits for the consumer changes.
 
 `claude-haiku-5-5` is not a drop-in for `claude-haiku-4-5`: `reasoning` is `adaptive` (no
 `budget_tokens`, default effort `medium`), and `allows_temperature` is `false`. It is priced by

@@ -786,7 +786,21 @@
       "max_reference_images": 14,
       "voices": null,
       "status": "active",
-      "pricing": null
+      "pricing": {
+        "per_image": 0.134,
+        "variants": [
+          {
+            "condition": "image_size_2k",
+            "per_image": 0.134,
+            "note": "imageSize \"2K\" (billed as 1120 tokens, same as 1K)."
+          },
+          {
+            "condition": "image_size_4k",
+            "per_image": 0.24,
+            "note": "imageSize \"4K\"."
+          }
+        ]
+      }
     },
     {
       "id": "google_imagen_flash",
@@ -806,10 +820,29 @@
       "server_web_tools": false,
       "vision": true,
       "needs_pdf_rasterization": false,
-      "max_reference_images": 3,
+      "max_reference_images": 14,
       "voices": null,
       "status": "active",
-      "pricing": null
+      "pricing": {
+        "per_image": 0.067,
+        "variants": [
+          {
+            "condition": "image_size_512",
+            "per_image": 0.045,
+            "note": "imageSize \"512\" (512px)."
+          },
+          {
+            "condition": "image_size_2k",
+            "per_image": 0.101,
+            "note": "imageSize \"2K\"."
+          },
+          {
+            "condition": "image_size_4k",
+            "per_image": 0.151,
+            "note": "imageSize \"4K\"."
+          }
+        ]
+      }
     },
     {
       "id": "openai_gpt_image_2",
@@ -875,6 +908,66 @@
       "voices": null,
       "status": "active",
       "pricing": null
+    },
+    {
+      "id": "google_imagen_flash_2_1",
+      "name": "Nano Banana 2.1 (Gemini Nano Banana 2.1)",
+      "description": "Update to Nano Banana 2 and Google's recommended image model for new projects (stable, released 2026-10-06). imageSize 1K (default)/2K/4K, no 512; all 14 aspect ratios; up to 14 reference images (10 objects + 4 characters); text/image/video/PDF input. Thinking always on: thinking_level minimal/medium (default)/high. Google Search grounding (web + image search). Token-billed: input $1.50/1M, text+thinking out $7.50/1M, image out $30/1M.",
+      "provider": "google",
+      "kind": "image_gen",
+      "api_model_id": "gemini-nano-banana-2.1",
+      "aliases": [
+        "nano-banana-2.1",
+        "google/nano-banana-2.1"
+      ],
+      "reasoning": "none",
+      "allows_temperature": false,
+      "responses_api": false,
+      "server_web_tools": false,
+      "vision": true,
+      "needs_pdf_rasterization": false,
+      "max_reference_images": 14,
+      "voices": null,
+      "status": "active",
+      "pricing": {
+        "per_image": 0.0336,
+        "variants": [
+          {
+            "condition": "image_size_2k",
+            "per_image": 0.0504,
+            "note": "imageSize \"2K\"."
+          },
+          {
+            "condition": "image_size_4k",
+            "per_image": 0.113,
+            "note": "imageSize \"4K\"."
+          }
+        ]
+      }
+    },
+    {
+      "id": "google_imagen_flash_lite",
+      "name": "Nano Banana 2 Lite (Gemini 3.1 Flash Lite Image)",
+      "description": "Cheapest Gemini image model (stable, released 2026-06-30); Google's named replacement for gemini-2.5-flash-image. imageSize 1K only (2K/4K unsupported); up to 14 object references but not optimized for multi-reference or multi-turn editing; no character/style references; text/image/video/PDF input; 65,536 input / 4,096 output tokens. Thinking always on: thinking_level minimal (default)/high. No Google Search grounding. Token-billed: input $0.25/1M, text+thinking out $1.50/1M, image out $30/1M.",
+      "provider": "google",
+      "kind": "image_gen",
+      "api_model_id": "gemini-3.1-flash-lite-image",
+      "aliases": [
+        "nano-banana-2-lite",
+        "google/nano-banana-2-lite"
+      ],
+      "reasoning": "none",
+      "allows_temperature": false,
+      "responses_api": false,
+      "server_web_tools": false,
+      "vision": true,
+      "needs_pdf_rasterization": false,
+      "max_reference_images": 14,
+      "voices": null,
+      "status": "active",
+      "pricing": {
+        "per_image": 0.0336
+      }
     },
     {
       "id": "claude-opus-4-8",
