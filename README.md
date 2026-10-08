@@ -72,6 +72,7 @@ raised, as long as a fallback remains. Only a total failure of all four raises.
 | `.resolve(id)` | migrate, then look up |
 | `.models_by_kind(kind=None)` / `.models_by_provider(p=None)` | list, or dict of all |
 | `.get_price(id)` | current base `Pricing`, or `None` when unpriced |
+| `.price_for(id, input_tokens=None, conditions=())` | the rate for ONE request: base + the applicable `long_context_gt_<N>k` card + any named variants (e.g. `image_size_4k`); `None` when unpriced |
 
 ### Model kinds and their pricing shapes
 
@@ -79,7 +80,7 @@ raised, as long as a fallback remains. Only a total failure of all four raises.
 |---|---|
 | `chat`, `embedding` | `input_per_1m`, `output_per_1m`, `cached_input_per_1m` |
 | `decision` | token shape: `input_per_1m`, `output_per_1m` (`0` when output is free) |
-| `image_gen` | `per_image` |
+| `image_gen` | `per_image` (the default-size price; other sizes as `image_size_*` variants) |
 | `realtime` | `audio_input_per_1m`, `audio_output_per_1m`, `text_input_per_1m`, `text_output_per_1m`, `cached_input_per_1m` (+ optional `cached_audio_input_per_1m`) |
 
 `Pricing` is one Python class with every field optional, so reading the wrong shape yields
@@ -97,6 +98,12 @@ confidence + per-option probabilities, `score` → probability-weighted level),
 longest question), `max_choice_options` and `max_score_levels`. These fields are `null`
 on every other kind.
 
+`image_gen` models (schema_minor 3) may carry `image_sizes` (size tokens spelled as the
+API wants them, e.g. Gemini `["512","1K","2K","4K"]`), `default_image_size` and
+`aspect_ratios`. `null` means unpublished: omit the size / keep your own ratio list. Never
+send a size or ratio that isn't listed; image models of one provider are **not**
+interchangeable (e.g. Nano Banana 2 Lite is 1K only, Pro has no 1:4/4:1/1:8/8:1).
+
 ### Rules consumers must follow
 
 - **Ignore model kinds you don't handle.** New kinds are added additively (`realtime`
@@ -111,6 +118,10 @@ on every other kind.
 - **Ignore unknown `pricing.variants[].condition` values.** The vocabulary is open
   (`off_peak`, `batch`, `long_context_gt_200k`, …); a new condition must never break you.
   Fall back to the base rate when you don't recognise one.
+- **Price long-context requests per request.** `long_context_gt_<N>k` bills the *whole
+  request* at the higher card once that request's input exceeds N×1000 tokens. Use
+  `price_for(id, input_tokens=…)` with each model response's own input count — never an
+  agent run's total, which would overcharge.
 - **Ignore unknown `reasoning` values** — the adapter already degrades them to `"none"`
   with a warning.
 - `pricing: null` means *no verified price*, not free.

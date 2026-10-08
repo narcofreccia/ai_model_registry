@@ -130,6 +130,10 @@ class Model(_Frozen):
     vision: bool = False
     needs_pdf_rasterization: bool = False
     max_reference_images: int | None = None
+    # Image models (kind == "image_gen", schema_minor 3); None when unpublished.
+    image_sizes: tuple[str, ...] | None = None
+    default_image_size: str | None = None
+    aspect_ratios: tuple[str, ...] | None = None
     voices: tuple[str, ...] | None = None
     modalities: tuple[str, ...] | None = None
     # Decision models (kind == "decision"); None elsewhere.

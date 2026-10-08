@@ -61,7 +61,28 @@ def test_the_shipped_registry_passes_every_invariant(validate):
     validate.check_lifecycle(registry)
     validate.check_realtime(registry)
     validate.check_decision(registry)
+    validate.check_image(registry)
     assert validate.failures == []
+
+
+def _image(**fields) -> dict:
+    return {"models": [{"id": "img-test", "kind": "image_gen", **fields}]}
+
+
+def test_image_default_size_must_be_listed(validate):
+    validate.check_image(_image(image_sizes=["1K"], default_image_size="2K"))
+    assert any("default_image_size" in f for f in validate.failures)
+
+
+def test_image_empty_lists_fail(validate):
+    validate.check_image(_image(image_sizes=[], aspect_ratios=[]))
+    assert any("image_sizes is empty" in f for f in validate.failures)
+    assert any("aspect_ratios is empty" in f for f in validate.failures)
+
+
+def test_image_fields_on_a_chat_model_fail(validate):
+    validate.check_image({"models": [{"id": "c", "kind": "chat", "image_sizes": ["1K"]}]})
+    assert any("image-only fields" in f for f in validate.failures)
 
 
 def test_realtime_without_voices_fails(validate):

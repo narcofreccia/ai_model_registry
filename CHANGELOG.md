@@ -2,6 +2,45 @@
 
 Dates are the promotion date (when `stable` was moved), not the merge date.
 
+## 2026-10-08 — image capability fields + `price_for()` (v0.4.2 → v0.5.0, schema_minor 2 → 3, additive)
+
+93 models (61 chat, 1 decision, 6 embedding, 12 image_gen, 13 realtime), 71 migrations, 7 providers.
+
+**Schema (additive, schema_minor 3).** `image_gen` models may carry three new optional
+fields. Validation fails if they appear on any other kind, and `default_image_size` must be
+one of `image_sizes`.
+- `image_sizes`: size tokens spelled as the API wants them.
+- `default_image_size`.
+- `aspect_ratios`.
+
+They are filled for the four Google models from ai.google.dev/gemini-api/docs/image-generation
+and the /models/<id> cards, read 2026-10-08:
+
+| id | image_sizes | default | aspect_ratios |
+|---|---|---|---|
+| `google_imagen_flash` | 512, 1K, 2K, 4K | 1K | all 14 (incl. 1:4, 4:1, 1:8, 8:1) |
+| `google_imagen_flash_2_1` | 1K, 2K, 4K | 1K | all 14 |
+| `google_imagen_pro` | 1K, 2K, 4K | 1K | 10 (no 1:4, 4:1, 1:8, 8:1) |
+| `google_imagen_flash_lite` | 1K | 1K | the 10 its model card lists |
+
+OpenAI image models leave them unset (unpublished).
+
+**Adapter.**
+- `Model.image_sizes`, `Model.default_image_size` and `Model.aspect_ratios` are new, `None`
+  by default.
+- `Registry.price_for(id, input_tokens=None, conditions=())` returns the rate for one request:
+  - the base price;
+  - plus the highest `long_context_gt_<N>k` card when that request's input exceeds N×1000
+    tokens;
+  - plus any variant named in `conditions` (e.g. `image_size_4k`).
+
+  Unknown conditions are ignored. `get_price()` is unchanged.
+
+**Compatibility.** The current `stable` adapter (v0.4.2) loads this registry with every
+model's parsed output identical (extra fields are ignored). Adapters pinned at v0.4.1
+(`cbf781be`) load it the same way. `generated_at` is now 2026-10-08; v0.4.2 shipped with the
+stale 2026-09-30.
+
 ## 2026-10-08 — Claude Haiku 5.5, Nano Banana 2.1 + 2 Lite, Google image prices, Sonnet 5.5 cache rate, `gpt-realtime-2.1-mini` cached audio rate (v0.4.1 → v0.4.2, facts only, no schema change)
 
 93 models (61 chat, 1 decision, 6 embedding, 12 image_gen, 13 realtime), 71 migrations, 7 providers.

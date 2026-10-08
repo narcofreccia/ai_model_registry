@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
-from .types import Kind, Model, Pricing, RegistryData
+import re
+from collections.abc import Iterable
+
+from .types import Kind, Model, Pricing, PricingVariant, RegistryData
 
 
 class Registry(RegistryData):
@@ -74,3 +77,52 @@ class Registry(RegistryData):
         """
         model = self.resolve(model_id)
         return model.pricing if model else None
+
+    def price_for(
+        self,
+        model_id: str,
+        *,
+        input_tokens: int | None = None,
+        conditions: Iterable[str] = (),
+    ) -> Pricing | None:
+        """The rate that applies to ONE request, or None when unknown.
+
+        Starts from the base price and overlays the variants that apply:
+
+        * ``long_context_gt_<N>k`` when ``input_tokens`` (that request's input,
+          never a whole run's total) exceeds N*1000 — only the highest such
+          threshold applies, as providers bill the whole request at that card;
+        * every variant named in ``conditions`` (e.g. ``image_size_4k``), in
+          order.
+
+        A rate the variant leaves unset keeps the base value. Conditions the
+        model does not publish are ignored. The result carries no variants.
+        """
+        base = self.get_price(model_id)
+        if base is None:
+            return None
+        applied: list[PricingVariant] = []
+        if input_tokens is not None:
+            tiers = [
+                (int(m.group(1)) * 1000, v)
+                for v in base.variants
+                if (m := _LONG_CONTEXT.fullmatch(v.condition))
+            ]
+            over = [t for t in tiers if input_tokens > t[0]]
+            if over:
+                applied.append(max(over, key=lambda t: t[0])[1])
+        for condition in conditions:
+            variant = base.variant(condition)
+            if variant is not None:
+                applied.append(variant)
+        update: dict[str, float] = {}
+        for variant in applied:
+            for key in _VARIANT_RATE_KEYS:
+                value = getattr(variant, key)
+                if value is not None:
+                    update[key] = value
+        return base.model_copy(update={**update, "variants": ()})
+
+
+_LONG_CONTEXT = re.compile(r"long_context_gt_(\d+)k")
+_VARIANT_RATE_KEYS = ("input_per_1m", "output_per_1m", "cached_input_per_1m", "per_image")

@@ -69,6 +69,20 @@ probabilities out, no text). On top of the common fields:
    parameters, even if the API ignores rather than rejects them.
 5. New decision models go after the existing decision block at the end of `models`.
 
+## Add an image model
+
+`kind: "image_gen"`. On top of the common fields:
+
+1. `max_reference_images` = the provider's total reference/input image limit.
+2. `image_sizes` / `default_image_size` / `aspect_ratios` (schema_minor 3): copy the
+   provider's per-model lists verbatim, spelled as the API wants them (`"512"`, `"1K"` —
+   uppercase K). A list the provider doesn't publish for *this* model is `null`, never
+   borrowed from a sibling. `default_image_size` must be one of `image_sizes`.
+3. Pricing: `per_image` = the price at `default_image_size`; every other size is an
+   `image_size_<token>` variant (`image_size_512`, `image_size_2k`, `image_size_4k`).
+   Token-billed models with no published per-image figure stay `null` + a CHANGELOG note.
+4. New image models go after the existing active image block.
+
 ## Extend the schema
 
 Additive changes (a new kind, a new optional field, a new pricing shape) bump

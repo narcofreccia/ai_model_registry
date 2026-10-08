@@ -122,6 +122,23 @@
           "minimum": 0,
           "description": "Image models: how many reference images the API accepts. Null when not applicable."
         },
+        "image_sizes": {
+          "type": ["array", "null"],
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true,
+          "description": "Image models (schema_minor 3): the output size tokens the API accepts, spelled exactly as the API wants them (Gemini [\"512\",\"1K\",\"2K\",\"4K\"], uppercase K). Optional; null/absent when unpublished or not applicable — consumers then omit the size."
+        },
+        "default_image_size": {
+          "type": ["string", "null"],
+          "minLength": 1,
+          "description": "Image models (schema_minor 3): the size the API uses when none is sent; one of image_sizes. Optional; null/absent when unpublished."
+        },
+        "aspect_ratios": {
+          "type": ["array", "null"],
+          "items": { "type": "string", "pattern": "^[0-9]+:[0-9]+$" },
+          "uniqueItems": true,
+          "description": "Image models (schema_minor 3): the aspect ratios the API documents for this model (\"16:9\"). Optional; null/absent when unpublished — consumers then keep their own list."
+        },
         "voices": {
           "type": ["array", "null"],
           "items": { "type": "string" },

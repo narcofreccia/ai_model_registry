@@ -213,6 +213,40 @@ def test_deprecated_realtime_ids_stay_callable_verbatim(registry):
     assert registry.get("gpt-4o-mini-realtime-preview").pricing.audio_input_per_1m == 10.0
 
 
+def test_price_for_without_context_is_the_base_rate(registry):
+    price = registry.price_for("claude-haiku-5-5")
+    assert (price.input_per_1m, price.output_per_1m, price.cached_input_per_1m) == (0.1, 0.5, 0.01)
+    assert price.variants == ()
+
+
+def test_price_for_applies_the_long_context_card_per_request(registry):
+    under = registry.price_for("claude-haiku-5-5", input_tokens=100_000)
+    over = registry.price_for("claude-haiku-5-5", input_tokens=100_001)
+    assert under.input_per_1m == 0.1
+    assert (over.input_per_1m, over.output_per_1m, over.cached_input_per_1m) == (0.5, 2.5, 0.05)
+    gpt = registry.price_for("gpt-6.1-sol", input_tokens=300_000)
+    assert (gpt.input_per_1m, gpt.output_per_1m, gpt.cached_input_per_1m) == (4.0, 15.0, 0.2)
+
+
+def test_price_for_named_conditions_and_unknown_ones(registry):
+    assert registry.price_for("google_imagen_flash").per_image == 0.067
+    assert registry.price_for("google_imagen_flash", conditions=["image_size_4k"]).per_image == 0.151
+    assert registry.price_for("google_imagen_flash", conditions=["no_such_tier"]).per_image == 0.067
+    assert registry.price_for("not-a-model") is None
+
+
+def test_image_capability_fields(registry):
+    flash = registry.get("google_imagen_flash")
+    assert flash.image_sizes == ("512", "1K", "2K", "4K")
+    assert flash.default_image_size == "1K"
+    assert "8:1" in flash.aspect_ratios
+    lite = registry.get("google_imagen_flash_lite")
+    assert lite.image_sizes == ("1K",)
+    assert "4:1" not in registry.get("google_imagen_pro").aspect_ratios
+    # unpublished stays None, never a guess
+    assert registry.get("openai_gpt_image_2").image_sizes is None
+
+
 def test_old_snapshots_without_the_new_fields_still_load(registry):
     """Adapter tolerance in the other direction: a pre-realtime registry has no
     `modalities` and no `schema_minor`."""

@@ -247,6 +247,37 @@ def check_against_stable(registry: dict) -> None:
             )
 
 
+# ---------------------------------------------------------------------------
+# 7b. image models: size / aspect-ratio capability fields
+# ---------------------------------------------------------------------------
+_IMAGE_FIELDS = ("image_sizes", "default_image_size", "aspect_ratios")
+
+
+def check_image(registry: dict) -> None:
+    for model in registry.get("models", []):
+        model_id = model.get("id")
+        if model.get("kind") != "image_gen":
+            stray = [f for f in _IMAGE_FIELDS if model.get(f) is not None]
+            if stray:
+                fail(
+                    f"model {model_id!r} (kind {model.get('kind')!r}) carries "
+                    f"image-only fields {stray}"
+                )
+            continue
+        sizes = model.get("image_sizes")
+        default = model.get("default_image_size")
+        if default is not None and (not sizes or default not in sizes):
+            fail(
+                f"image model {model_id!r}: default_image_size {default!r} is not "
+                f"one of image_sizes {sizes!r}"
+            )
+        if sizes is not None and not sizes:
+            fail(f"image model {model_id!r}: image_sizes is empty — use null when unpublished")
+        ratios = model.get("aspect_ratios")
+        if ratios is not None and not ratios:
+            fail(f"image model {model_id!r}: aspect_ratios is empty — use null when unpublished")
+
+
 def main() -> int:
     try:
         registry = json.loads(REGISTRY_PATH.read_text())
@@ -263,6 +294,7 @@ def main() -> int:
     check_lifecycle(registry)
     check_realtime(registry)
     check_decision(registry)
+    check_image(registry)
     check_against_stable(registry)
 
     for note in notes:
