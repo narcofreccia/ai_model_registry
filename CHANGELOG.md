@@ -2,7 +2,15 @@
 
 Dates are the promotion date (when `stable` was moved), not the merge date.
 
-## Unreleased — Claude Haiku 5.5, Sonnet 5.5 cache rate, `gpt-realtime-2.1-mini` cached audio rate (facts only)
+## 2026-10-08 — Claude Haiku 5.5, Sonnet 5.5 cache rate, `gpt-realtime-2.1-mini` cached audio rate (v0.4.1 → v0.4.2, facts only, no schema change)
+
+91 models (61 chat, 1 decision, 6 embedding, 10 image_gen, 13 realtime), 71 migrations, 7 providers.
+
+Deprecation review (2026-10-08): no status changes. Anthropic, OpenAI and Google list no
+deprecation for any active id, and every OpenRouter slug resolves. Notes only:
+`gemini-live-2.5-flash-native-audio` doesn't appear on Google's deprecations page. Google's
+table may name `gemini-nano-banana-2.1` (released 2026-10-06) as the successor to
+`gemini-3.1-flash-image`, but gives no deprecation notice.
 
 **Added**
 
