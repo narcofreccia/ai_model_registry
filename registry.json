@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "schema_minor": 3,
-  "generated_at": "2026-10-08T12:00:00Z",
+  "generated_at": "2026-10-26T12:00:00Z",
   "providers": {
     "anthropic": {
       "name": "Anthropic",
@@ -142,7 +142,7 @@
     {
       "id": "gpt-5.6-sol",
       "name": "GPT-5.6 Sol",
-      "description": "Frontier tier for the most demanding assignments.",
+      "description": "Frontier tier for the most demanding assignments. Prompts over 272K input tokens are billed at the long_context variant. Promotional price, published as available at least through 2026-11-21; no post-promotion rate published.",
       "provider": "openai",
       "kind": "chat",
       "api_model_id": "gpt-5.6-sol",
@@ -159,13 +159,22 @@
       "pricing": {
         "input_per_1m": 4.0,
         "output_per_1m": 20.0,
-        "cached_input_per_1m": 0.4
+        "cached_input_per_1m": 0.4,
+        "variants": [
+          {
+            "condition": "long_context_gt_272k",
+            "input_per_1m": 8.0,
+            "output_per_1m": 30.0,
+            "cached_input_per_1m": 0.8,
+            "note": "Prompts with more than 272K input tokens: 2x input and cache rates, 1.5x output."
+          }
+        ]
       }
     },
     {
       "id": "gpt-5.6-terra",
       "name": "GPT-5.6 Terra",
-      "description": "Balanced tier: strong performance at everyday efficiency.",
+      "description": "Balanced tier: strong performance at everyday efficiency. Prompts over 272K input tokens are billed at the long_context variant.",
       "provider": "openai",
       "kind": "chat",
       "api_model_id": "gpt-5.6-terra",
@@ -182,13 +191,22 @@
       "pricing": {
         "input_per_1m": 2.0,
         "output_per_1m": 12.0,
-        "cached_input_per_1m": 0.2
+        "cached_input_per_1m": 0.2,
+        "variants": [
+          {
+            "condition": "long_context_gt_272k",
+            "input_per_1m": 4.0,
+            "output_per_1m": 18.0,
+            "cached_input_per_1m": 0.4,
+            "note": "Prompts with more than 272K input tokens: 2x input and cache rates, 1.5x output."
+          }
+        ]
       }
     },
     {
       "id": "gpt-5.6-luna",
       "name": "GPT-5.6 Luna",
-      "description": "Fast, affordable tier for high-volume tasks and subagents.",
+      "description": "Fast, affordable tier for high-volume tasks and subagents. Prompts over 272K input tokens are billed at the long_context variant.",
       "provider": "openai",
       "kind": "chat",
       "api_model_id": "gpt-5.6-luna",
@@ -205,13 +223,22 @@
       "pricing": {
         "input_per_1m": 0.2,
         "output_per_1m": 1.2,
-        "cached_input_per_1m": 0.02
+        "cached_input_per_1m": 0.02,
+        "variants": [
+          {
+            "condition": "long_context_gt_272k",
+            "input_per_1m": 0.4,
+            "output_per_1m": 1.8,
+            "cached_input_per_1m": 0.04,
+            "note": "Prompts with more than 272K input tokens: 2x input and cache rates, 1.5x output."
+          }
+        ]
       }
     },
     {
       "id": "gemini-3.1-pro-preview",
       "name": "Gemini 3.1 Pro",
-      "description": "Google's flagship (preview \u2014 no stable Pro id exists). Thinking budget.",
+      "description": "Google's flagship (preview \u2014 no stable Pro id exists). Thinking budget. Still a preview with no shutdown date (checked 2026-10-26). Prompts over 200K input tokens are billed at the long_context variant.",
       "provider": "google",
       "kind": "chat",
       "api_model_id": "gemini-3.1-pro-preview",
@@ -225,12 +252,25 @@
       "max_reference_images": null,
       "voices": null,
       "status": "active",
-      "pricing": null
+      "pricing": {
+        "input_per_1m": 2.0,
+        "output_per_1m": 12.0,
+        "cached_input_per_1m": 0.2,
+        "variants": [
+          {
+            "condition": "long_context_gt_200k",
+            "input_per_1m": 4.0,
+            "output_per_1m": 18.0,
+            "cached_input_per_1m": 0.4,
+            "note": "Prompts with more than 200K input tokens."
+          }
+        ]
+      }
     },
     {
       "id": "gemini-3.5-flash",
       "name": "Gemini 3.5 Flash",
-      "description": "Fast, balanced, frontier intelligence. Stable.",
+      "description": "Deprecated 2026-10-08 and removed from Google's pricing page; requests are auto-routed to gemini-3.6-flash (the named replacement). No shutdown date.",
       "provider": "google",
       "kind": "chat",
       "api_model_id": "gemini-3.5-flash",
@@ -243,7 +283,7 @@
       "needs_pdf_rasterization": false,
       "max_reference_images": null,
       "voices": null,
-      "status": "active",
+      "status": "deprecated",
       "pricing": null
     },
     {
@@ -263,7 +303,11 @@
       "max_reference_images": null,
       "voices": null,
       "status": "deprecated",
-      "pricing": null
+      "pricing": {
+        "input_per_1m": 0.25,
+        "output_per_1m": 1.5,
+        "cached_input_per_1m": 0.025
+      }
     },
     {
       "id": "glm-5.3-flash",
@@ -291,7 +335,7 @@
     {
       "id": "moonshotai/kimi-k3",
       "name": "Kimi K3 (OpenRouter)",
-      "description": "Moonshot's open-weights frontier model, agentic and long-context.",
+      "description": "Moonshot's previous-generation flagship (K3.1 Pro is the named successor; no retirement date). Text/image/video in. OpenRouter may route to a cheaper third-party host; the price here is the first-party endpoint rate.",
       "provider": "openrouter",
       "kind": "chat",
       "api_model_id": "moonshotai/kimi-k3",
@@ -300,17 +344,21 @@
       "allows_temperature": true,
       "responses_api": false,
       "server_web_tools": false,
-      "vision": false,
+      "vision": true,
       "needs_pdf_rasterization": false,
       "max_reference_images": null,
       "voices": null,
       "status": "active",
-      "pricing": null
+      "pricing": {
+        "input_per_1m": 3.0,
+        "output_per_1m": 15.0,
+        "cached_input_per_1m": 0.3
+      }
     },
     {
       "id": "deepseek/deepseek-v4-pro",
       "name": "DeepSeek V4 Pro (OpenRouter)",
-      "description": "DeepSeek's flagship open-weights reasoner.",
+      "description": "DeepSeek V4 Pro (0423 snapshot). DeepSeek's own endpoint moved to deepseek/deepseek-v4-pro-0813 (2026-10); this slug is now served by third-party hosts only.",
       "provider": "openrouter",
       "kind": "chat",
       "api_model_id": "deepseek/deepseek-v4-pro",
@@ -323,7 +371,7 @@
       "needs_pdf_rasterization": false,
       "max_reference_images": null,
       "voices": null,
-      "status": "active",
+      "status": "deprecated",
       "pricing": null
     },
     {
@@ -348,7 +396,7 @@
     {
       "id": "z-ai/glm-5.3-flash",
       "name": "GLM-5.3 Flash (OpenRouter)",
-      "description": "GLM-5.3 Flash routed through OpenRouter (no Z.ai key needed).",
+      "description": "GLM-5.3 Flash routed through OpenRouter (no Z.ai key needed). OpenRouter may route to a cheaper third-party host; the price here is the first-party endpoint rate.",
       "provider": "openrouter",
       "kind": "chat",
       "api_model_id": "z-ai/glm-5.3-flash",
@@ -362,7 +410,11 @@
       "max_reference_images": null,
       "voices": null,
       "status": "active",
-      "pricing": null
+      "pricing": {
+        "input_per_1m": 0.15,
+        "output_per_1m": 0.5,
+        "cached_input_per_1m": 0.03
+      }
     },
     {
       "id": "claude-fable-5-1",
@@ -478,7 +530,7 @@
     {
       "id": "gpt-6-sol",
       "name": "GPT-6 Sol",
-      "description": "GPT-6 mid tier for complex coding and agentic workflows; successor to GPT-5.6 Sol at half the price. 1.05M context, 128K max output, reasoning effort none/low/medium/high/xhigh/max; no temperature (reasoning model). Prompts over 272K input tokens are billed at the long_context variant.",
+      "description": "GPT-6 mid tier for complex coding and agentic workflows; successor to GPT-5.6 Sol at half the price. 1.05M context, 128K max output, reasoning effort none/low/medium/high/xhigh/max; no temperature (reasoning model). Prompts over 272K input tokens are billed at the long_context variant. OpenAI now points to gpt-6.1-sol as the newer Sol model.",
       "provider": "openai",
       "kind": "chat",
       "api_model_id": "gpt-6-sol",
@@ -650,6 +702,191 @@
       }
     },
     {
+      "id": "gemini-4-argon",
+      "name": "Gemini 4 Argon",
+      "description": "Google's flagship Gemini 4 model (GA 2026-10-13, not on the free tier). One 1,048,576-token window shared by input, thinking and output; default max_output_tokens 65,536. thinking_level low/medium (default)/high; temperature/top_p/top_k are ignored, so do not send them. Implicit caching only (prompts of 4,096+ tokens); explicit cachedContents unsupported. Text/image/video/audio/PDF in, text out. Introductory price through 2026-11-30, standard rate from 2026-12-01 in the variant.",
+      "provider": "google",
+      "kind": "chat",
+      "api_model_id": "gemini-4-argon",
+      "aliases": [],
+      "reasoning": "google_budget",
+      "allows_temperature": false,
+      "responses_api": false,
+      "server_web_tools": false,
+      "vision": true,
+      "needs_pdf_rasterization": false,
+      "max_reference_images": null,
+      "voices": null,
+      "status": "active",
+      "pricing": {
+        "input_per_1m": 2.0,
+        "output_per_1m": 10.0,
+        "cached_input_per_1m": 0.1,
+        "effective_from": "2026-10-13",
+        "variants": [
+          {
+            "condition": "from_2026-12-01",
+            "input_per_1m": 4.0,
+            "output_per_1m": 20.0,
+            "cached_input_per_1m": 0.2,
+            "note": "Standard pricing starting December 1, 2026 (introductory rate ends 2026-11-30)."
+          }
+        ]
+      }
+    },
+    {
+      "id": "gemini-3.6-flash",
+      "name": "Gemini 3.6 Flash",
+      "description": "Previous-generation Flash model that remains available for production use (GA 2026-07-21); Google's named replacement for gemini-3.5-flash. 1,048,576 input / 65,536 output tokens; thinking supported; text/image/video/audio/PDF in. The model card does not document temperature; Google deprecated temperature/top_p/top_k on 2026-07-21, so do not send them. Introductory price through 2026-12-31, standard rate from 2027-01-01 in the variant.",
+      "provider": "google",
+      "kind": "chat",
+      "api_model_id": "gemini-3.6-flash",
+      "aliases": [],
+      "reasoning": "google_budget",
+      "allows_temperature": false,
+      "responses_api": false,
+      "server_web_tools": false,
+      "vision": true,
+      "needs_pdf_rasterization": false,
+      "max_reference_images": null,
+      "voices": null,
+      "status": "active",
+      "pricing": {
+        "input_per_1m": 0.75,
+        "output_per_1m": 3.75,
+        "cached_input_per_1m": 0.075,
+        "effective_from": "2026-07-21",
+        "variants": [
+          {
+            "condition": "from_2027-01-01",
+            "input_per_1m": 1.5,
+            "output_per_1m": 7.5,
+            "cached_input_per_1m": 0.15,
+            "note": "Standard pricing starting January 1, 2027 (introductory rate ends 2026-12-31)."
+          }
+        ]
+      }
+    },
+    {
+      "id": "moonshotai/kimi-k3.1-pro",
+      "name": "Kimi K3.1 Pro (OpenRouter)",
+      "description": "Moonshot's K3.1 Pro, post-trained successor to Kimi K3 (released 2026-10-23; Moonshot direct id kimi-k3.1-pro). 1,048,576 context; text/image/video in. Reasoning is always on and cannot be disabled: reasoning_effort low/high/max (default max); pass reasoning_content back on later turns. The highspeed variant is an OpenRouter endpoint of this slug (4.00/20.00), not a separate slug. OpenRouter may route to a cheaper third-party host; the price here is the first-party endpoint rate.",
+      "provider": "openrouter",
+      "kind": "chat",
+      "api_model_id": "moonshotai/kimi-k3.1-pro",
+      "aliases": [],
+      "reasoning": "openrouter_reasoning",
+      "allows_temperature": true,
+      "responses_api": false,
+      "server_web_tools": false,
+      "vision": true,
+      "needs_pdf_rasterization": false,
+      "max_reference_images": null,
+      "voices": null,
+      "status": "active",
+      "pricing": {
+        "input_per_1m": 2.0,
+        "output_per_1m": 10.0,
+        "cached_input_per_1m": 0.2
+      }
+    },
+    {
+      "id": "gpt-6.1-terra",
+      "name": "GPT-6.1 Terra",
+      "description": "GPT-6.1 mid tier: balanced performance at everyday cost (released 2026-10-26). 1.05M context (922K max input), 128K max output, reasoning effort none/low/medium (default)/high/xhigh/max; no temperature (reasoning model). Text/image in, text out. Chat Completions, Responses and Batch; tool calling requires the Responses API. Prompts over 272K input tokens are billed at the long_context variant.",
+      "provider": "openai",
+      "kind": "chat",
+      "api_model_id": "gpt-6.1-terra",
+      "aliases": [],
+      "reasoning": "openai_effort",
+      "allows_temperature": false,
+      "responses_api": true,
+      "server_web_tools": true,
+      "vision": true,
+      "needs_pdf_rasterization": false,
+      "max_reference_images": null,
+      "voices": null,
+      "status": "active",
+      "pricing": {
+        "input_per_1m": 1.0,
+        "output_per_1m": 5.0,
+        "cached_input_per_1m": 0.05,
+        "variants": [
+          {
+            "condition": "long_context_gt_272k",
+            "input_per_1m": 2.0,
+            "output_per_1m": 7.5,
+            "cached_input_per_1m": 0.1,
+            "note": "Prompts with more than 272K input tokens: 2x input and cache rates, 1.5x output."
+          }
+        ]
+      }
+    },
+    {
+      "id": "deepseek/deepseek-v4-pro-0813",
+      "name": "DeepSeek V4 Pro 0813 (OpenRouter)",
+      "description": "DeepSeek's flagship reasoner, GA snapshot of 2026-08-13 and the slug DeepSeek's own endpoint serves (same model as direct deepseek-v4-pro). Text only; 1M context, 384K max output; thinking can be switched off (on by default). Base price is the peak rate; off-peak (all hours outside 01:00-04:00 and 06:00-10:00 UTC Mon-Fri, excluding Chinese public holidays) is half, in the variant. OpenRouter may route to a cheaper third-party host; the price here is the first-party endpoint rate.",
+      "provider": "openrouter",
+      "kind": "chat",
+      "api_model_id": "deepseek/deepseek-v4-pro-0813",
+      "aliases": [],
+      "reasoning": "openrouter_reasoning",
+      "allows_temperature": true,
+      "responses_api": false,
+      "server_web_tools": false,
+      "vision": false,
+      "needs_pdf_rasterization": false,
+      "max_reference_images": null,
+      "voices": null,
+      "status": "active",
+      "pricing": {
+        "input_per_1m": 1.32,
+        "output_per_1m": 3.96,
+        "cached_input_per_1m": 0.044,
+        "variants": [
+          {
+            "condition": "off_peak",
+            "input_per_1m": 0.66,
+            "output_per_1m": 1.98,
+            "cached_input_per_1m": 0.022,
+            "note": "Off-peak: outside 01:00-04:00 and 06:00-10:00 UTC, Monday-Friday, excluding Chinese public holidays."
+          }
+        ]
+      }
+    },
+    {
+      "id": "deepseek/deepseek-v4.1-flash-1017",
+      "name": "DeepSeek V4.1 Flash 1017 (OpenRouter)",
+      "description": "DeepSeek's fast tier, snapshot of 2026-10-17, served by DeepSeek's own endpoint (same model as direct deepseek-flash). Text and image in; thinking supported. Base price is the peak rate; off-peak (outside 01:00-04:00 and 06:00-10:00 UTC Mon-Fri, excluding Chinese public holidays) is half, in the variant. OpenRouter may route to a cheaper third-party host; the price here is the first-party endpoint rate.",
+      "provider": "openrouter",
+      "kind": "chat",
+      "api_model_id": "deepseek/deepseek-v4.1-flash-1017",
+      "aliases": [],
+      "reasoning": "openrouter_reasoning",
+      "allows_temperature": true,
+      "responses_api": false,
+      "server_web_tools": false,
+      "vision": true,
+      "needs_pdf_rasterization": false,
+      "max_reference_images": null,
+      "voices": null,
+      "status": "active",
+      "pricing": {
+        "input_per_1m": 0.3,
+        "output_per_1m": 1.2,
+        "cached_input_per_1m": 0.006,
+        "variants": [
+          {
+            "condition": "off_peak",
+            "input_per_1m": 0.15,
+            "output_per_1m": 0.6,
+            "cached_input_per_1m": 0.003,
+            "note": "Off-peak: outside 01:00-04:00 and 06:00-10:00 UTC, Monday-Friday, excluding Chinese public holidays."
+          }
+        ]
+      }
+    },
+    {
       "id": "local:all-MiniLM-L6-v2",
       "name": "all-MiniLM-L6-v2 (Local)",
       "description": "Free, runs locally via ChromaDB.",
@@ -685,7 +922,11 @@
       "max_reference_images": null,
       "voices": null,
       "status": "active",
-      "pricing": null
+      "pricing": {
+        "input_per_1m": 0.02,
+        "output_per_1m": 0,
+        "cached_input_per_1m": null
+      }
     },
     {
       "id": "text-embedding-3-large",
@@ -704,7 +945,11 @@
       "max_reference_images": null,
       "voices": null,
       "status": "active",
-      "pricing": null
+      "pricing": {
+        "input_per_1m": 0.13,
+        "output_per_1m": 0,
+        "cached_input_per_1m": null
+      }
     },
     {
       "id": "models/text-embedding-004",
@@ -823,7 +1068,7 @@
     {
       "id": "google_imagen_flash",
       "name": "Nano Banana 2 (Gemini 3.1 Flash Image)",
-      "description": "Fast, cheap image generation with reference support.",
+      "description": "Fast, cheap image generation with reference support. Deprecated 2026-10-06 (replacement gemini-nano-banana-2.1, no shutdown date); still callable. The only Google image model that accepts imageSize \"512\".",
       "provider": "google",
       "kind": "image_gen",
       "api_model_id": "gemini-3.1-flash-image",
@@ -863,7 +1108,7 @@
         "21:9"
       ],
       "voices": null,
-      "status": "active",
+      "status": "deprecated",
       "pricing": {
         "per_image": 0.067,
         "variants": [
@@ -888,7 +1133,7 @@
     {
       "id": "openai_gpt_image_2",
       "name": "GPT Image 2",
-      "description": "OpenAI's flagship image model. Near-perfect in-image text, up to 16 reference images, transparent backgrounds.",
+      "description": "OpenAI's flagship image model. Near-perfect in-image text, up to 16 reference images, transparent backgrounds. Token rates (per 1M): image input 8.00, cached image input 2.00, image output 30.00; text input 5.00, cached text 1.25 (cached rates only via the Responses image_generation tool). Batch is half.",
       "provider": "openai",
       "kind": "image_gen",
       "api_model_id": "gpt-image-2",
@@ -909,7 +1154,7 @@
     {
       "id": "openai_gpt_image_2_5_sunburst",
       "name": "GPT Image 2.5 Sunburst",
-      "description": "OpenAI's most capable image generation and editing model (released 2026-09-08). Quality low/medium/high/xhigh/max/auto; Images API generations + edits, or the Responses image_generation tool. Token-priced: text input $5/1M (cached $1.25), image input $8/1M (cached $2), image output $30/1M \u2014 same rates as GPT Image 2; per-image price not published, so pricing is null.",
+      "description": "OpenAI's most capable image generation and editing model (released 2026-09-08). Quality low/medium/high/xhigh/max/auto; Images API generations + edits, or the Responses image_generation tool. Token-priced: text input $5/1M (cached $1.25), image input $8/1M (cached $2), image output $30/1M \u2014 same rates as GPT Image 2; per-image price not published, so pricing is null. Token rates (per 1M): image input 8.00, cached image input 2.00, image output 30.00; text input 5.00, cached text 1.25 (cached rates only via the Responses image_generation tool). Batch is half.",
       "provider": "openai",
       "kind": "image_gen",
       "api_model_id": "gpt-image-2.5-sunburst",
@@ -931,7 +1176,7 @@
     {
       "id": "openai_gpt_image_2_5_flare",
       "name": "GPT Image 2.5 Flare",
-      "description": "OpenAI's fastest high-quality everyday image generation model (released 2026-09-08). Quality low/medium/high/xhigh/max/auto; Images API generations + edits, or the Responses image_generation tool. Token-priced at the same rates as Sunburst; per-image price not published, so pricing is null.",
+      "description": "OpenAI's fastest high-quality everyday image generation model (released 2026-09-08). Quality low/medium/high/xhigh/max/auto; Images API generations + edits, or the Responses image_generation tool. Token-priced at the same rates as Sunburst; per-image price not published, so pricing is null. Token rates (per 1M): image input 8.00, cached image input 2.00, image output 30.00; text input 5.00, cached text 1.25 (cached rates only via the Responses image_generation tool). Batch is half.",
       "provider": "openai",
       "kind": "image_gen",
       "api_model_id": "gpt-image-2.5-flare",
@@ -1108,7 +1353,7 @@
     {
       "id": "claude-sonnet-4-5",
       "name": "Claude Sonnet 4.5",
-      "description": "Superseded by Claude Sonnet 5.",
+      "description": "Superseded by Claude Sonnet 5. Deprecated 2026-09-30; retires 2026-11-30 (replacement claude-sonnet-5-5).",
       "provider": "anthropic",
       "kind": "chat",
       "api_model_id": "claude-sonnet-4-5-20250929",
@@ -1131,7 +1376,7 @@
     {
       "id": "claude-sonnet-4",
       "name": "Claude Sonnet 4",
-      "description": "Superseded by Claude Sonnet 5.",
+      "description": "Superseded by Claude Sonnet 5. Retired 2026-06-15.",
       "provider": "anthropic",
       "kind": "chat",
       "api_model_id": "claude-sonnet-4-20250514",
@@ -1144,7 +1389,7 @@
       "needs_pdf_rasterization": false,
       "max_reference_images": null,
       "voices": null,
-      "status": "deprecated",
+      "status": "retired",
       "pricing": {
         "input_per_1m": 3.0,
         "output_per_1m": 15.0,
@@ -1223,7 +1468,7 @@
     {
       "id": "gpt-5.4-nano",
       "name": "GPT-5.4 Nano",
-      "description": "Superseded by the GPT-5.6 family (Luna).",
+      "description": "Superseded by the GPT-5.6 family (Luna). Shuts down 2027-04-01 (replacement gpt-6-luna).",
       "provider": "openai",
       "kind": "chat",
       "api_model_id": "gpt-5.4-nano",
@@ -1246,7 +1491,7 @@
     {
       "id": "gpt-4.1",
       "name": "GPT-4.1",
-      "description": "Legacy non-reasoning OpenAI model. PDFs must be rasterized to images.",
+      "description": "Legacy non-reasoning OpenAI model. PDFs must be rasterized to images. Dated snapshot gpt-4.1-2025-04-14 shuts down 2027-01-14 (replacement gpt-6-luna).",
       "provider": "openai",
       "kind": "chat",
       "api_model_id": "gpt-4.1",
@@ -1265,7 +1510,7 @@
     {
       "id": "gpt-4.1-mini",
       "name": "GPT-4.1 Mini",
-      "description": "Legacy non-reasoning OpenAI model. PDFs must be rasterized to images.",
+      "description": "Legacy non-reasoning OpenAI model. PDFs must be rasterized to images. Dated snapshot gpt-4.1-mini-2025-04-14 shuts down 2027-01-14 (replacement gpt-6-luna).",
       "provider": "openai",
       "kind": "chat",
       "api_model_id": "gpt-4.1-mini",
@@ -1284,7 +1529,7 @@
     {
       "id": "gpt-4o",
       "name": "GPT-4o",
-      "description": "Legacy non-reasoning OpenAI model. PDFs must be rasterized to images.",
+      "description": "Legacy non-reasoning OpenAI model. PDFs must be rasterized to images. Dated snapshots gpt-4o-2024-08-06 / -2024-11-20 shut down 2027-01-14 (replacement gpt-6-luna).",
       "provider": "openai",
       "kind": "chat",
       "api_model_id": "gpt-4o",
@@ -1307,7 +1552,7 @@
     {
       "id": "gpt-4o-mini",
       "name": "GPT-4o Mini",
-      "description": "Legacy non-reasoning OpenAI model. PDFs must be rasterized to images.",
+      "description": "Legacy non-reasoning OpenAI model. PDFs must be rasterized to images. Dated snapshot gpt-4o-mini-2024-07-18 shuts down 2027-01-14 (replacement gpt-6-luna).",
       "provider": "openai",
       "kind": "chat",
       "api_model_id": "gpt-4o-mini",
@@ -1330,7 +1575,7 @@
     {
       "id": "o3",
       "name": "o3",
-      "description": "Legacy OpenAI reasoning model. PDFs must be rasterized to images.",
+      "description": "Legacy OpenAI reasoning model. PDFs must be rasterized to images. Shuts down 2026-12-11 (replacement gpt-5.6-sol).",
       "provider": "openai",
       "kind": "chat",
       "api_model_id": "o3",
@@ -1353,7 +1598,7 @@
     {
       "id": "gpt-5",
       "name": "GPT-5",
-      "description": "Superseded by GPT-5.4.",
+      "description": "Superseded by GPT-5.4. Shuts down 2026-12-11 (replacement gpt-5.6-sol).",
       "provider": "openai",
       "kind": "chat",
       "api_model_id": "gpt-5",
@@ -1376,7 +1621,7 @@
     {
       "id": "gpt-5.1",
       "name": "GPT-5.1",
-      "description": "Superseded by GPT-5.4.",
+      "description": "Superseded by GPT-5.4. Shuts down 2027-04-01 (replacement gpt-6-sol).",
       "provider": "openai",
       "kind": "chat",
       "api_model_id": "gpt-5.1",
@@ -1399,7 +1644,7 @@
     {
       "id": "gpt-5-mini",
       "name": "GPT-5 Mini",
-      "description": "Superseded by GPT-5.4 Mini.",
+      "description": "Superseded by GPT-5.4 Mini. Shuts down 2026-12-11 (replacement gpt-5.6-terra).",
       "provider": "openai",
       "kind": "chat",
       "api_model_id": "gpt-5-mini",
@@ -1422,7 +1667,7 @@
     {
       "id": "gpt-5-nano",
       "name": "GPT-5 Nano",
-      "description": "Superseded by GPT-5.4 Nano.",
+      "description": "Superseded by GPT-5.4 Nano. Shuts down 2026-12-11 (replacement gpt-5.6-luna).",
       "provider": "openai",
       "kind": "chat",
       "api_model_id": "gpt-5-nano",
@@ -1640,7 +1885,7 @@
     {
       "id": "gpt-image-1-mini",
       "name": "GPT Image 1 Mini",
-      "description": "Cheaper, lower-fidelity GPT Image 1. Superseded by GPT Image 2.",
+      "description": "Cheaper, lower-fidelity GPT Image 1. Superseded by GPT Image 2. Shuts down 2026-12-01 (replacement gpt-image-2.5-sunburst or -flare).",
       "provider": "openai",
       "kind": "image_gen",
       "api_model_id": "gpt-image-1-mini",
@@ -1773,7 +2018,7 @@
     {
       "id": "o4-mini",
       "name": "o4-mini",
-      "description": "Legacy OpenAI reasoning model. PDFs must be rasterized to images.",
+      "description": "Legacy OpenAI reasoning model. PDFs must be rasterized to images. Shut down 2026-10-23 (replacement gpt-5.6-terra).",
       "provider": "openai",
       "kind": "chat",
       "api_model_id": "o4-mini",
@@ -1786,7 +2031,7 @@
       "needs_pdf_rasterization": true,
       "max_reference_images": null,
       "voices": null,
-      "status": "deprecated",
+      "status": "retired",
       "pricing": null
     },
     {
@@ -1830,7 +2075,7 @@
     {
       "id": "claude-opus-4-1",
       "name": "Claude Opus 4.1",
-      "description": "Superseded by Claude Opus 4.8.",
+      "description": "Superseded by Claude Opus 4.8. Retired 2026-08-05.",
       "provider": "anthropic",
       "kind": "chat",
       "api_model_id": "claude-opus-4-1",
@@ -1843,13 +2088,13 @@
       "needs_pdf_rasterization": false,
       "max_reference_images": null,
       "voices": null,
-      "status": "deprecated",
+      "status": "retired",
       "pricing": null
     },
     {
       "id": "claude-opus-4",
       "name": "Claude Opus 4",
-      "description": "Superseded by Claude Opus 4.8.",
+      "description": "Superseded by Claude Opus 4.8. Retired 2026-06-15.",
       "provider": "anthropic",
       "kind": "chat",
       "api_model_id": "claude-opus-4",
@@ -1862,13 +2107,13 @@
       "needs_pdf_rasterization": false,
       "max_reference_images": null,
       "voices": null,
-      "status": "deprecated",
+      "status": "retired",
       "pricing": null
     },
     {
       "id": "claude-sonnet-3-7",
       "name": "Claude Sonnet 3.7",
-      "description": "Legacy Claude. Superseded by Claude Sonnet 5.",
+      "description": "Legacy Claude. Superseded by Claude Sonnet 5. Retired 2026-02-19.",
       "provider": "anthropic",
       "kind": "chat",
       "api_model_id": "claude-3-7-sonnet-20250219",
@@ -1881,13 +2126,13 @@
       "needs_pdf_rasterization": false,
       "max_reference_images": null,
       "voices": null,
-      "status": "deprecated",
+      "status": "retired",
       "pricing": null
     },
     {
       "id": "claude-haiku-3-5",
       "name": "Claude Haiku 3.5",
-      "description": "Legacy Claude. Superseded by Claude Haiku 4.5.",
+      "description": "Legacy Claude. Superseded by Claude Haiku 4.5. Retired 2026-02-19.",
       "provider": "anthropic",
       "kind": "chat",
       "api_model_id": "claude-3-5-haiku-20241022",
@@ -1900,7 +2145,7 @@
       "needs_pdf_rasterization": false,
       "max_reference_images": null,
       "voices": null,
-      "status": "deprecated",
+      "status": "retired",
       "pricing": null
     },
     {
@@ -1920,7 +2165,11 @@
       "max_reference_images": null,
       "voices": null,
       "status": "deprecated",
-      "pricing": null
+      "pricing": {
+        "input_per_1m": 0.1,
+        "output_per_1m": 0,
+        "cached_input_per_1m": null
+      }
     },
     {
       "id": "gpt-realtime-2.1",
@@ -2094,7 +2343,7 @@
     {
       "id": "gpt-audio-1.5",
       "name": "GPT Audio 1.5",
-      "description": "OpenAI audio model for turn-based (non-realtime) speech in/out. Same rates as Realtime 1.5.",
+      "description": "OpenAI audio model for turn-based (non-realtime) speech in/out, Chat Completions only. 128K context, 16,384 max output. No cached-input rate is published.",
       "provider": "openai",
       "kind": "realtime",
       "api_model_id": "gpt-audio-1.5",
@@ -2128,15 +2377,15 @@
       "pricing": {
         "audio_input_per_1m": 32.0,
         "audio_output_per_1m": 64.0,
-        "text_input_per_1m": 4.0,
-        "text_output_per_1m": 16.0,
-        "cached_input_per_1m": 0.4
+        "text_input_per_1m": 2.5,
+        "text_output_per_1m": 10.0,
+        "cached_input_per_1m": null
       }
     },
     {
       "id": "gpt-4o-realtime-preview",
       "name": "GPT-4o Realtime Preview",
-      "description": "Legacy GPT-4o realtime preview. Deprecated but still callable.",
+      "description": "Legacy GPT-4o realtime preview. Deprecated but still callable. Shut down 2026-05-07 (replacement gpt-realtime-1.5).",
       "provider": "openai",
       "kind": "realtime",
       "api_model_id": "gpt-4o-realtime-preview",
@@ -2166,7 +2415,7 @@
         "text",
         "audio"
       ],
-      "status": "deprecated",
+      "status": "retired",
       "pricing": {
         "audio_input_per_1m": 40.0,
         "audio_output_per_1m": 80.0,
@@ -2220,7 +2469,7 @@
     {
       "id": "gemini-3.1-flash-live-preview",
       "name": "Gemini 3.1 Flash Live",
-      "description": "Google's current Live API model for native-audio conversations. Deprecated: Google names gemini-3.8-live as the replacement (no shutdown date announced).",
+      "description": "Google's current Live API model for native-audio conversations. Deprecated: Google names gemini-3.8-live as the replacement (no shutdown date announced). Shuts down 2026-11-17 (replacement gemini-3.8-live).",
       "provider": "google",
       "kind": "realtime",
       "api_model_id": "gemini-3.1-flash-live-preview",
@@ -2397,7 +2646,7 @@
     {
       "id": "gemini-live-2.5-flash-native-audio",
       "name": "Gemini Live 2.5 Flash Native Audio",
-      "description": "Gemini 2.5 Flash native-audio Live model (undated channel).",
+      "description": "Gemini 2.5 Flash native-audio Live model (undated channel). Not listed on any Gemini API page (models, pricing, deprecations) as of 2026-10-26; status unchanged pending a Google notice.",
       "provider": "google",
       "kind": "realtime",
       "api_model_id": "gemini-live-2.5-flash-native-audio",
@@ -2456,7 +2705,7 @@
     {
       "id": "gemini-2.5-flash-native-audio-preview-12-2025",
       "name": "Gemini 2.5 Flash Native Audio (12-2025)",
-      "description": "Dated preview of the Gemini 2.5 Flash native-audio Live model. Deprecated: Google names gemini-3.8-live as the replacement (no shutdown date announced).",
+      "description": "Dated preview of the Gemini 2.5 Flash native-audio Live model. Deprecated: Google names gemini-3.8-live as the replacement (no shutdown date announced). Shuts down 2026-11-17 (replacement gemini-3.8-live).",
       "provider": "google",
       "kind": "realtime",
       "api_model_id": "gemini-2.5-flash-native-audio-preview-12-2025",
@@ -2574,10 +2823,43 @@
     {
       "id": "jev-1.13",
       "name": "Jev 1.13",
-      "description": "TypeSafe's System One decision model. Not a chat model: it evaluates a text/JSON `state` against typed questions and returns calibrated answers, never text. Question types: noul (yes/no -> probability of yes), choice (up to 255 options -> chosen key, confidence and per-option probabilities), score (2-10 ordered rubric levels -> probability-weighted score). Text only; sampling parameters are ignored. Endpoint POST /v1/systemone.",
+      "description": "TypeSafe's System One decision model (previous release; still current, no deprecation announced; jev-latest now resolves to jev-1.14.0). Not a chat model: it evaluates a text/JSON `state` against typed questions and returns calibrated answers, never text. Question types: noul (yes/no -> probability of yes), choice (up to 255 options -> chosen key, confidence and per-option probabilities), score (2-10 ordered rubric levels -> probability-weighted score). Text only; sampling parameters are ignored. Endpoint POST /v1/systemone.",
       "provider": "typesafe",
       "kind": "decision",
       "api_model_id": "jev-1.13.0",
+      "aliases": [],
+      "reasoning": "none",
+      "allows_temperature": false,
+      "responses_api": false,
+      "server_web_tools": false,
+      "vision": false,
+      "needs_pdf_rasterization": false,
+      "max_reference_images": null,
+      "voices": null,
+      "modalities": null,
+      "question_types": [
+        "noul",
+        "choice",
+        "score"
+      ],
+      "max_request_tokens": 64000,
+      "max_state_question_tokens": 32000,
+      "max_choice_options": 255,
+      "max_score_levels": 10,
+      "status": "active",
+      "pricing": {
+        "input_per_1m": 0.042,
+        "output_per_1m": 0.0,
+        "cached_input_per_1m": null
+      }
+    },
+    {
+      "id": "jev-1.14",
+      "name": "Jev 1.14",
+      "description": "TypeSafe's System One decision model (available from 2026-10-14; jev-latest points here). Not a chat model: it evaluates a text/JSON `state` against typed questions and returns calibrated answers, never text. Question types: noul (yes/no -> probability of yes), choice (up to 255 options -> chosen key, confidence and per-option probabilities), score (2-10 ordered rubric levels -> probability-weighted score). Text only; sampling parameters are ignored. Endpoint POST /v1/systemone.",
+      "provider": "typesafe",
+      "kind": "decision",
+      "api_model_id": "jev-1.14.0",
       "aliases": [
         "jev-latest"
       ],
@@ -2678,6 +2960,9 @@
     "models/text-embedding-004": "gemini-embedding-2",
     "gemini-3.1-flash-lite": "gemini-3.5-flash-lite",
     "gemini-3.1-flash-live-preview": "gemini-3.8-live",
-    "gemini-2.5-flash-native-audio-preview-12-2025": "gemini-3.8-live"
+    "gemini-2.5-flash-native-audio-preview-12-2025": "gemini-3.8-live",
+    "gemini-3.5-flash": "gemini-3.6-flash",
+    "google_imagen_flash": "google_imagen_flash_2_1",
+    "deepseek/deepseek-v4-pro": "deepseek/deepseek-v4-pro-0813"
   }
 }

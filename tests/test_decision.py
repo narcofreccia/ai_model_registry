@@ -32,9 +32,11 @@ def validate():
 # --- the shipped entry ------------------------------------------------------
 def test_jev_resolves_by_id_alias_and_api_model_id(registry):
     assert registry.get("jev-1.13").id == "jev-1.13"
-    assert registry.get("jev-latest").id == "jev-1.13"
     assert registry.get("jev-1.13.0").id == "jev-1.13"
-    assert [m.id for m in registry.models_by_kind("decision")] == ["jev-1.13"]
+    assert registry.get("jev-1.14").id == "jev-1.14"
+    assert registry.get("jev-1.14.0").id == "jev-1.14"
+    assert registry.get("jev-latest").id == "jev-1.14"  # TypeSafe moved jev-latest on 2026-10-14
+    assert [m.id for m in registry.models_by_kind("decision")] == ["jev-1.13", "jev-1.14"]
 
 
 def test_jev_facts_round_trip(registry):

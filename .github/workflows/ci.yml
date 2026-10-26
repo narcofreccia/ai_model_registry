@@ -1,15 +1,18 @@
 name: CI
 
+# Manual only: Actions minutes are paid. Run checks locally (scripts/validate.py, pytest);
+# scripts/release.py triggers this with `gh workflow run ci.yml -f promote=true`.
 on:
-  push:
-    branches: [main]
-  pull_request:
   workflow_dispatch:
     inputs:
       promote:
         description: "Move the `stable` tag to this commit after validation"
         type: boolean
         default: false
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   validate:

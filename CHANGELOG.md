@@ -2,6 +2,122 @@
 
 Dates are the promotion date (when `stable` was moved), not the merge date.
 
+## 2026-10-26 — Gemini 4 Argon + 3.6 Flash, Kimi K3.1 Pro, GPT-6.1 Terra, DeepSeek first-party slugs, Jev 1.14, Google/OpenAI/Anthropic deprecations, price fills (v0.5.0 → v0.5.1, facts only, no schema change)
+
+100 models (67 chat, 2 decision, 6 embedding, 12 image_gen, 13 realtime), 74 migrations, 7 providers.
+Every figure was read from the provider's own page on 2026-10-26 (four Opus 5.5 research
+passes, every number re-checked against the page before landing).
+
+Deprecation review (2026-10-26):
+- Google (ai.google.dev/gemini-api/docs/deprecations, updated 2026-10-22): `gemini-3.5-flash`
+  deprecated 2026-10-08, removed from the pricing page and auto-routed to `gemini-3.6-flash`
+  → **deprecated**, migration → `gemini-3.6-flash` (added). `gemini-3.1-flash-image`
+  (`google_imagen_flash`) deprecated 2026-10-06, replacement `gemini-nano-banana-2.1`, no
+  shutdown date → **deprecated**, migration → `google_imagen_flash_2_1`; its alias
+  `gemini-2.5-flash-image` stays (tide_backend). Shutdown dates recorded in descriptions:
+  `gemini-3.1-flash-live-preview` and `gemini-2.5-flash-native-audio-preview-12-2025`
+  → 2026-11-17; `gemini-3.1-flash-lite` → 2027-05-07. `gemini-live-2.5-flash-native-audio`
+  appears on no Gemini API page (models, pricing, deprecations); left `active`, noted in its
+  description. Gemini 3.7 Flash (never in the registry) was deprecated the same day.
+- OpenAI (developers.openai.com/api/docs/deprecations): `o4-mini` shut down 2026-10-23 and
+  `gpt-4o-realtime-preview` shut down 2026-05-07 → **retired**. Dates recorded: `gpt-5`,
+  `gpt-5-mini`, `gpt-5-nano`, `o3` → 2026-12-11; `gpt-image-1-mini` → 2026-12-01; `gpt-5.1`,
+  `gpt-5.4-nano` → 2027-04-01; the dated `gpt-4o` / `gpt-4o-mini` / `gpt-4.1` /
+  `gpt-4.1-mini` snapshots → 2027-01-14 (replacement `gpt-6-luna`). No active OpenAI id is
+  listed. `gpt-6-sol` is not deprecated, but its page now points to `gpt-6.1-sol`.
+- Anthropic (platform.claude.com/docs/en/about-claude/model-deprecations): `claude-opus-4-1`,
+  `claude-opus-4`, `claude-sonnet-4`, `claude-sonnet-3-7`, `claude-haiku-3-5` are past their
+  retirement dates → **retired**. `claude-sonnet-4-5` retires 2026-11-30 (replacement
+  `claude-sonnet-5-5`), recorded. **Not changed:** Anthropic lists `claude-opus-4-8` (not
+  before 2027-05-28), `-4-7` (2027-04-16), `-4-6` (2027-02-05), `-4-5` (2026-11-24) and
+  `claude-sonnet-4-6` (2027-02-17) as Active "legacy" models; the registry keeps them
+  `deprecated` so consumers keep hiding superseded tiers. `claude-haiku-4-5` stays active
+  (its "not sooner than 2026-10-15" date passed without a notice).
+- OpenRouter: every active slug returns 200 on `/api/v1/models/<slug>/endpoints`.
+  `deepseek/deepseek-v4-pro` still resolves but DeepSeek's own endpoint moved to
+  `deepseek/deepseek-v4-pro-0813`; the old slug is third-party hosts only → **deprecated**,
+  migration → `deepseek/deepseek-v4-pro-0813` (added). `zai/glm-5.3-flash` → 404, retirement
+  confirmed. Moonshot names `kimi-k3.1-pro` the successor of K3 but gives K3 no retirement
+  date, so `moonshotai/kimi-k3` stays active.
+- TypeSafe (docs.typesafe.ai/models.md): `jev-1.14.0` is `jev-latest` since 2026-10-14;
+  `jev-1.13.0` is still listed as current, no deprecation.
+
+**Added**
+
+| id | kind | api_model_id | price (USD per 1M unless noted) | source |
+|---|---|---|---|---|
+| `gemini-4-argon` | chat | `gemini-4-argon` | in 2.00 · cached 0.10 · out 10.00 (intro through 2026-11-30); variant `from_2026-12-01` 4.00 / 0.20 / 20.00 | ai.google.dev/gemini-api/docs/pricing + /models/gemini-4-argon + /latest-model, read 2026-10-26 (GA 2026-10-13) |
+| `gemini-3.6-flash` | chat | `gemini-3.6-flash` | 0.75 / 0.075 / 3.75 (intro through 2026-12-31); variant `from_2027-01-01` 1.50 / 0.15 / 7.50 | same pricing page + /models/gemini-3.6-flash, read 2026-10-26 (GA 2026-07-21) |
+| `moonshotai/kimi-k3.1-pro` | chat | `moonshotai/kimi-k3.1-pro` | 2.00 / 0.20 / 10.00 (Moonshot endpoint) | openrouter.ai/api/v1/models/moonshotai/kimi-k3.1-pro/endpoints + platform.kimi.ai/docs/pricing/chat, read 2026-10-26 (released 2026-10-23) |
+| `gpt-6.1-terra` | chat | `gpt-6.1-terra` | 1.00 / 0.05 / 5.00; `long_context_gt_272k` 2.00 / 0.10 / 7.50 | developers.openai.com/api/docs/pricing + /models/gpt-6.1-terra, read 2026-10-26 (released 2026-10-26) |
+| `deepseek/deepseek-v4-pro-0813` | chat | `deepseek/deepseek-v4-pro-0813` | peak 1.32 / 0.044 / 3.96; `off_peak` 0.66 / 0.022 / 1.98 | openrouter.ai …/deepseek/deepseek-v4-pro-0813/endpoints (DeepSeek endpoint) + api-docs.deepseek.com/quick_start/pricing/, read 2026-10-26 |
+| `deepseek/deepseek-v4.1-flash-1017` | chat | `deepseek/deepseek-v4.1-flash-1017` | peak 0.30 / 0.006 / 1.20; `off_peak` 0.15 / 0.003 / 0.60 | same two pages, read 2026-10-26 (released 2026-10-17) |
+| `jev-1.14` | decision | `jev-1.14.0` | 0.042 in, output free | docs.typesafe.ai/models.md, read 2026-10-26 (available 2026-10-14) |
+
+The six chat models are appended after `claude-haiku-5-5` in that order; `jev-1.14` follows
+`jev-1.13` and takes over the `jev-latest` alias. DeepSeek's base price is the **peak** rate
+(01:00–04:00 and 06:00–10:00 UTC, Mon–Fri, excluding Chinese public holidays); every other
+hour is the `off_peak` variant at half price. OpenRouter's top-level `/models` price is the
+cheapest host (often a quantized third-party copy, e.g. Kimi K3 at 0.20/20); the registry
+records the **first-party endpoint** rate and says so in each description. OpenRouter may
+still route to a cheaper host, so the billed rate can be lower than recorded.
+
+`gemini-4-argon` ignores `temperature`/`top_p`/`top_k`, accepts only implicit caching, and
+is not on the free tier. `gemini-3.6-flash`'s card does not mention temperature; Google
+deprecated the parameter on 2026-07-21 (the model's GA date), so `allows_temperature` is
+`false`. Kimi K3.1 Pro's reasoning cannot be disabled (`reasoning_effort` low/high/max,
+default max); its highspeed variant (4.00 / 20.00) is an OpenRouter *endpoint* of the same
+slug, not a slug. Moonshot direct (`kimi-k3.1-pro` at api.moonshot.ai/v1) is not a registry
+provider; add one if an app needs it.
+
+**Fixed**
+- `gpt-audio-1.5` text rates were wrong: `text_input_per_1m` 4.00 → **2.50**,
+  `text_output_per_1m` 16.00 → **10.00**, `cached_input_per_1m` 0.40 → **null** (OpenAI
+  publishes no cached rate for it). Audio 32 / 64 unchanged. Source:
+  developers.openai.com/api/docs/pricing + /models/gpt-audio-1.5, read 2026-10-26.
+- `moonshotai/kimi-k3` `vision` false → **true** (image + video input on both OpenRouter
+  and Moonshot).
+- `pricing: null` filled from provider pages (all read 2026-10-26):
+  - `gemini-3.1-pro-preview`: 2.00 / 0.20 / 12.00; `long_context_gt_200k` 4.00 / 0.40 / 18.00.
+  - `gemini-3.1-flash-lite` (deprecated): 0.25 / 0.025 / 1.50.
+  - `text-embedding-3-small` 0.02, `text-embedding-3-large` 0.13, `text-embedding-ada-002`
+    0.10 (output 0). OpenAI has no newer embedding model; Anthropic publishes none.
+  - `moonshotai/kimi-k3`: 3.00 / 0.30 / 15.00 (Moonshot endpoint).
+  - `z-ai/glm-5.3-flash`: 0.15 / 0.03 / 0.50 (Z.AI endpoint; matches the direct price).
+- `gpt-5.6-sol`, `gpt-5.6-terra`, `gpt-5.6-luna` gain the `long_context_gt_272k` card they
+  were missing: 8 / 0.80 / 30, 4 / 0.40 / 18, 0.40 / 0.04 / 1.80. `gpt-5.6-sol`'s base
+  price is promotional, published as available at least through 2026-11-21.
+- `generated_at` is now 2026-10-26.
+
+Re-checked, unchanged: every other active Google, OpenAI and Anthropic price, including
+`gpt-6.1-sol` (2 / 0.10 / 10; long-context 4 / 0.20 / 15), `gpt-6-astra`,
+`claude-fable-5-1` (cached 0.25), `claude-opus-5-5`, `claude-haiku-5-5`, the four Google
+image models and both Live models. Live API voices are still the same 30.
+
+Still `pricing: null`: `openai_gpt_image_2`, `openai_gpt_image_2_5_sunburst`,
+`openai_gpt_image_2_5_flare` — OpenAI publishes token rates only (image in 8.00, cached
+2.00, out 30.00; text in 5.00, cached 1.25; batch half; cached rates only through the
+Responses image tool), now recorded in the descriptions. The per-image estimates in
+OpenAI's image guide exist only for `gpt-image-2` and are labelled estimates, so they are
+not copied. `gemini-3.5-flash` keeps null (deprecated; `get_price` migrates to 3.6 Flash).
+
+Not added (no matching kind in the schema): Google's `gemini-3.8-flash-tts`,
+`gemini-3.8-flash-lite-tts`, `gemini-3.5-transcribe`, `gemini-omni-1.1-flash`, OpenAI's
+`gpt-live-1`, `gpt-transcribe`, ElevenLabs v4, Voxtral TTS. A `tts` / `transcribe` kind
+would be an additive schema_minor bump. Not added (restricted access): `claude-mythos-5`,
+`claude-mythos-5-1`, `gpt-rosalind-*`, `gpt-5.6-cyber`. Candidates reviewed and left out
+for now: `x-ai/grok-4.7`, `minimax/minimax-m3.1-flash`, `mistralai/mistral-large-4-0`
+(preview), `meta/muse-wonder`, Z.ai `glm-5.3` / `glm-5.3-flashx`, Perplexity's
+`pplx-decider-v1.2` decision model (needs a new provider).
+
+**Tooling.** `.github/workflows/ci.yml` now runs on `workflow_dispatch` only (push and
+pull_request triggers removed; `concurrency` with cancel-in-progress added). Validation
+runs locally before a release and again inside the promote run; `scripts/release.py`
+is unchanged.
+
+**Compatibility.** No schema change. The `stable` adapter (v0.5.0) loads this registry
+unchanged. Adapters before 0.4.0 still reject the `decision` kind (two consumers).
+
 ## 2026-10-08 — image capability fields + `price_for()` (v0.4.2 → v0.5.0, schema_minor 2 → 3, additive)
 
 93 models (61 chat, 1 decision, 6 embedding, 12 image_gen, 13 realtime), 71 migrations, 7 providers.

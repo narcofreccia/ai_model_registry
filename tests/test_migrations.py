@@ -85,5 +85,5 @@ def test_tide_reel_legacy_ids_resolve(registry):
     ):
         model = registry.get(model_id)
         assert model is not None, model_id
-        assert model.status == "deprecated", model_id
+        assert model.status in ("deprecated", "retired"), model_id
         assert registry.resolve(model_id).status == "active", model_id

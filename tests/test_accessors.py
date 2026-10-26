@@ -16,10 +16,8 @@ TIDE_SHARE_CHAT_ORDER = [
     "gpt-5.6-terra",
     "gpt-5.6-luna",
     "gemini-3.1-pro-preview",
-    "gemini-3.5-flash",
     "glm-5.3-flash",
     "moonshotai/kimi-k3",
-    "deepseek/deepseek-v4-pro",
     "z-ai/glm-5.3-flash",
     "claude-fable-5-1",
     "gpt-6-astra",
@@ -31,6 +29,12 @@ TIDE_SHARE_CHAT_ORDER = [
     "claude-sonnet-5-5",
     "gemini-3.5-flash-lite",
     "claude-haiku-5-5",
+    "gemini-4-argon",
+    "gemini-3.6-flash",
+    "moonshotai/kimi-k3.1-pro",
+    "gpt-6.1-terra",
+    "deepseek/deepseek-v4-pro-0813",
+    "deepseek/deepseek-v4.1-flash-1017",
 ]
 
 
@@ -90,7 +94,7 @@ def test_unknown_reasoning_mode_degrades_to_none(registry, caplog):
 def test_get_price_returns_base_price(registry):
     price = registry.get_price("claude-opus-5")
     assert (price.input_per_1m, price.output_per_1m) == (5.0, 25.0)
-    assert registry.get_price("gemini-3.5-flash") is None  # unverified -> null
+    assert registry.get_price("openai_gpt_image_2") is None  # no per-image figure -> null
 
 
 def test_get_price_applies_migrations(registry):
@@ -110,7 +114,7 @@ def test_variants_default_to_empty(registry):
 def test_variants_load_and_do_not_disturb_base_readers(registry):
     """A model carrying conditional rates still reads as a plain base price."""
     data = json.loads(registry.model_dump_json())
-    target = next(m for m in data["models"] if m["id"] == "deepseek/deepseek-v4-pro")
+    target = next(m for m in data["models"] if m["id"] == "deepseek/deepseek-v4-pro-0813")
     target["pricing"] = {
         "input_per_1m": 1.0,
         "output_per_1m": 2.0,
@@ -122,7 +126,7 @@ def test_variants_load_and_do_not_disturb_base_readers(registry):
         ],
     }
     loaded = Registry.model_validate(data)
-    price = loaded.get_price("deepseek/deepseek-v4-pro")
+    price = loaded.get_price("deepseek/deepseek-v4-pro-0813")
 
     # a consumer reading only base fields is unaffected by the variants
     assert (price.input_per_1m, price.output_per_1m) == (1.0, 2.0)
@@ -201,10 +205,12 @@ def test_realtime_migrations_chain_to_the_flagship(registry):
 def test_deprecated_realtime_ids_stay_callable_verbatim(registry):
     """House rule: deprecated = still callable. The entry (and its own price)
     must survive lookup without being replaced by the migration target."""
-    for model_id in ("gpt-realtime-2", "gpt-realtime-1.5", "gpt-4o-realtime-preview"):
+    for model_id in ("gpt-realtime-2", "gpt-realtime-1.5"):
         model = registry.get(model_id)
         assert model.id == model_id
         assert model.status == "deprecated"
+    # shut down 2026-05-07: the entry survives as retired, still with its own price
+    assert registry.get("gpt-4o-realtime-preview").status == "retired"
     # NOTE: get_price() migrates first (registry-wide behavior), so a deprecated
     # id reads the SUCCESSOR's rates. A biller charging a deprecated id verbatim
     # must read `registry.get(id).pricing` instead — these differ here.
@@ -229,9 +235,12 @@ def test_price_for_applies_the_long_context_card_per_request(registry):
 
 
 def test_price_for_named_conditions_and_unknown_ones(registry):
-    assert registry.price_for("google_imagen_flash").per_image == 0.067
-    assert registry.price_for("google_imagen_flash", conditions=["image_size_4k"]).per_image == 0.151
-    assert registry.price_for("google_imagen_flash", conditions=["no_such_tier"]).per_image == 0.067
+    assert registry.price_for("google_imagen_flash_2_1").per_image == 0.0336
+    assert registry.price_for("google_imagen_flash_2_1", conditions=["image_size_4k"]).per_image == 0.113
+    assert registry.price_for("google_imagen_flash_2_1", conditions=["no_such_tier"]).per_image == 0.0336
+    # deprecated 2026-10-06: price_for migrates to Nano Banana 2.1, the verbatim rate stays on the entry
+    assert registry.price_for("google_imagen_flash").per_image == 0.0336
+    assert registry.get("google_imagen_flash").pricing.per_image == 0.067
     assert registry.price_for("not-a-model") is None
 
 
@@ -259,3 +268,34 @@ def test_old_snapshots_without_the_new_fields_still_load(registry):
     assert loaded.schema_minor == 0
     assert loaded.models[0].modalities is None
     assert loaded.models_by_kind("realtime") == []
+
+
+# --- 2026-10-26 refresh ------------------------------------------------------
+def test_gpt_6_1_terra_long_context_card(registry):
+    assert registry.get_price("gpt-6.1-terra").output_per_1m == 5.0
+    over = registry.price_for("gpt-6.1-terra", input_tokens=300_000)
+    assert (over.input_per_1m, over.output_per_1m, over.cached_input_per_1m) == (2.0, 7.5, 0.1)
+
+
+def test_gemini_3_1_pro_preview_is_priced_with_a_200k_card(registry):
+    assert registry.get_price("gemini-3.1-pro-preview").input_per_1m == 2.0
+    assert registry.price_for("gemini-3.1-pro-preview", input_tokens=250_000).input_per_1m == 4.0
+
+
+def test_gpt_audio_1_5_has_no_cached_rate(registry):
+    price = registry.get_price("gpt-audio-1.5")
+    assert (price.text_input_per_1m, price.text_output_per_1m) == (2.5, 10.0)
+    assert price.cached_input_per_1m is None
+
+
+def test_openrouter_entries_carry_first_party_rates(registry):
+    assert registry.get("moonshotai/kimi-k3").vision is True
+    assert registry.get_price("moonshotai/kimi-k3").input_per_1m == 3.0
+    assert registry.get_price("moonshotai/kimi-k3.1-pro").output_per_1m == 10.0
+    assert registry.get_price("z-ai/glm-5.3-flash").cached_input_per_1m == 0.03
+
+
+def test_google_successors_migrate(registry):
+    assert registry.resolve("gemini-3.5-flash").id == "gemini-3.6-flash"
+    assert registry.resolve("deepseek/deepseek-v4-pro").id == "deepseek/deepseek-v4-pro-0813"
+    assert registry.get_price("deepseek/deepseek-v4-pro-0813").variant("off_peak").input_per_1m == 0.66
