@@ -2,6 +2,41 @@
 
 Dates are the promotion date (when `stable` was moved), not the merge date.
 
+## 2026-11-08 — GPT Image 2.6 Sunburst + Flare (v0.5.1 → v0.5.2, facts only, no schema change)
+
+102 models (67 chat, 2 decision, 6 embedding, 14 image_gen, 13 realtime), 74 migrations, 7 providers.
+Facts read from OpenAI's model, pricing and deprecations pages and fal's model pages on 2026-11-08.
+
+**Added**
+
+| id | kind | api_model_id | price | source |
+|---|---|---|---|---|
+| `openai_gpt_image_2_6_sunburst` | image_gen | `gpt-image-2.6-sunburst` | `null` — token-priced, see below | developers.openai.com/api/docs/models/gpt-image-2.6-sunburst + /pricing (released 2026-11-04) |
+| `openai_gpt_image_2_6_flare` | image_gen | `gpt-image-2.6-flare` | `null` — token-priced, see below | developers.openai.com/api/docs/models/gpt-image-2.6-flare + /pricing (released 2026-11-04) |
+
+Both are appended after the GPT Image 2.5 pair, with `openai/gpt-image-2.6-*` aliases (fal serves
+them at `openai/gpt-image-2.6/{sunburst,flare}/{text-to-image,edit}`; fal endpoint ids stay
+consumer-local). OpenAI lists no dated snapshot aliases. Token rates are identical to 2.5 —
+text in $5 (cached $1.25), image in $8 (cached $2), image out $30 per 1M — and recorded in each
+`description`; the Batch endpoint is **not supported** for either (unlike 2.5, where Batch is half).
+New in 2.6: a reasoning-effort ("complexity") setting, markup-guided edits (markup image), SVG
+output and animated GIF output. Sunburst is the most detailed ("4K detail"), Flare the faster,
+smaller one. `max_reference_images`, `image_sizes` and `aspect_ratios` are not published per model,
+so they stay `null` / absent like the 2.5 entries. Same shape gap as 2.5: no per-image price, so
+`pricing: null` until an `image_token_pricing` shape exists.
+
+Deprecation review (2026-11-08, OpenAI only — no image or chat entry changed elsewhere):
+- developers.openai.com/api/docs/deprecations (entry dated 2026-06-02): `gpt-image-1-mini`,
+  `gpt-image-1.5` and `chatgpt-image-latest` shut down 2026-12-01, replacement
+  `gpt-image-2.6-sunburst` or `gpt-image-2.6-flare`. `gpt-image-1-mini` stays **deprecated**
+  (still callable); its description now names the 2.6 pair and its migration moves
+  `openai_gpt_image_2` → **`openai_gpt_image_2_6_flare`** (the cheap tier's closest successor;
+  consumers honour a deprecated id verbatim, so this only applies once it retires).
+  `gpt-image-1.5` is already `retired` → `openai_gpt_image_2` (a real, active model; left as is).
+  `chatgpt-image-latest` was never in the registry.
+- `gpt-image-1` shut down 2026-10-23 — already `retired`. `gpt-image-2` and `gpt-image-2.5-*`
+  are not on the page and stay `active`.
+
 ## 2026-10-26 — Gemini 4 Argon + 3.6 Flash, Kimi K3.1 Pro, GPT-6.1 Terra, DeepSeek first-party slugs, Jev 1.14, Google/OpenAI/Anthropic deprecations, price fills (v0.5.0 → v0.5.1, facts only, no schema change)
 
 100 models (67 chat, 2 decision, 6 embedding, 12 image_gen, 13 realtime), 74 migrations, 7 providers.

@@ -20,4 +20,4 @@ __all__ = [
     "STABLE_URL",
 ]
 
-__version__ = "0.5.1"
+__version__ = "0.5.2"

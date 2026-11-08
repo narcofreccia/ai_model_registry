@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "schema_minor": 3,
-  "generated_at": "2026-10-26T12:00:00Z",
+  "generated_at": "2026-11-08T12:00:00Z",
   "providers": {
     "anthropic": {
       "name": "Anthropic",
@@ -1196,6 +1196,48 @@
       "pricing": null
     },
     {
+      "id": "openai_gpt_image_2_6_sunburst",
+      "name": "GPT Image 2.6 Sunburst",
+      "description": "OpenAI's most detailed image generation and editing model (\"4K detail\"; released 2026-11-04). Images API generations + edits, or the Responses image_generation tool. New in 2.6: a reasoning-effort (\"complexity\") setting, markup-guided edits (pass a markup image), SVG output and animated GIF output. Token-priced at the same rates as GPT Image 2.5; per-image price not published, so pricing is null. Token rates (per 1M): image input 8.00, cached image input 2.00, image output 30.00; text input 5.00, cached text 1.25. Batch not supported.",
+      "provider": "openai",
+      "kind": "image_gen",
+      "api_model_id": "gpt-image-2.6-sunburst",
+      "aliases": [
+        "openai/gpt-image-2.6-sunburst"
+      ],
+      "reasoning": "none",
+      "allows_temperature": false,
+      "responses_api": false,
+      "server_web_tools": false,
+      "vision": true,
+      "needs_pdf_rasterization": false,
+      "max_reference_images": null,
+      "voices": null,
+      "status": "active",
+      "pricing": null
+    },
+    {
+      "id": "openai_gpt_image_2_6_flare",
+      "name": "GPT Image 2.6 Flare",
+      "description": "OpenAI's faster, smaller GPT Image 2.6 model for everyday image generation and editing (released 2026-11-04). Images API generations + edits, or the Responses image_generation tool. New in 2.6: a reasoning-effort (\"complexity\") setting, markup-guided edits (pass a markup image), SVG output and animated GIF output. Token-priced at the same rates as GPT Image 2.5; per-image price not published, so pricing is null. Token rates (per 1M): image input 8.00, cached image input 2.00, image output 30.00; text input 5.00, cached text 1.25. Batch not supported.",
+      "provider": "openai",
+      "kind": "image_gen",
+      "api_model_id": "gpt-image-2.6-flare",
+      "aliases": [
+        "openai/gpt-image-2.6-flare"
+      ],
+      "reasoning": "none",
+      "allows_temperature": false,
+      "responses_api": false,
+      "server_web_tools": false,
+      "vision": true,
+      "needs_pdf_rasterization": false,
+      "max_reference_images": null,
+      "voices": null,
+      "status": "active",
+      "pricing": null
+    },
+    {
       "id": "google_imagen_flash_2_1",
       "name": "Nano Banana 2.1 (Gemini Nano Banana 2.1)",
       "description": "Update to Nano Banana 2 and Google's recommended image model for new projects (stable, released 2026-10-06). imageSize 1K (default)/2K/4K, no 512; all 14 aspect ratios; up to 14 reference images (10 objects + 4 characters); text/image/video/PDF input. Thinking always on: thinking_level minimal/medium (default)/high. Google Search grounding (web + image search). Token-billed: input $1.50/1M, text+thinking out $7.50/1M, image out $30/1M.",
@@ -1885,7 +1927,7 @@
     {
       "id": "gpt-image-1-mini",
       "name": "GPT Image 1 Mini",
-      "description": "Cheaper, lower-fidelity GPT Image 1. Superseded by GPT Image 2. Shuts down 2026-12-01 (replacement gpt-image-2.5-sunburst or -flare).",
+      "description": "Cheaper, lower-fidelity GPT Image 1. Shuts down 2026-12-01 (replacement gpt-image-2.6-sunburst or gpt-image-2.6-flare).",
       "provider": "openai",
       "kind": "image_gen",
       "api_model_id": "gpt-image-1-mini",
@@ -2939,7 +2981,7 @@
     "o3-mini": "gpt-5.6-luna",
     "claude-sonnet-4-5-thinking": "claude-sonnet-5",
     "gpt-image-1": "openai_gpt_image_2",
-    "gpt-image-1-mini": "openai_gpt_image_2",
+    "gpt-image-1-mini": "openai_gpt_image_2_6_flare",
     "dall-e-3": "openai_gpt_image_2",
     "dall-e-2": "openai_gpt_image_2",
     "gpt-5.4-pro": "gpt-5.6-sol",
