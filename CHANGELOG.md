@@ -2,6 +2,22 @@
 
 Dates are the promotion date (when `stable` was moved), not the merge date.
 
+## 2026-11-18 — Qwen4 Max priced from OpenRouter's Alibaba endpoint (v0.6.0 → v0.6.1, facts only, no schema change)
+
+113 models (78 chat, 2 decision, 6 embedding, 14 image_gen, 13 realtime), 74 migrations, 7 providers.
+Read 2026-11-18: openrouter.ai/api/v1/models/qwen/qwen4-max/endpoints (the Alibaba endpoint,
+`qwen/qwen4-max-20261115`, lists prompt 0.000001425, completion 0.000004275, input_cache_read
+0.00000007125, `discount` 0.05, no end date) and Alibaba Model Studio's model-pricing page
+(qwen4-max: International/Singapore 1.5 / 4.5 / 0.075; China, Hong Kong, Frankfurt, Virginia,
+Tokyo 1.413 / 4.24 / 0.071; a single 0-1M tier, no end date for any discount).
+An `openrouter` entry records OpenRouter's first-party endpoint rate, so this one follows the
+same convention. No dated variant: OpenRouter publishes no end date for the discount.
+
+**Changed**
+- `qwen/qwen4-max` pricing `null` → 1.425 in / 4.275 out / 0.07125 cached per 1M (OpenRouter's
+  Alibaba endpoint, 5% below Alibaba's International list of 1.50 / 4.50 / 0.075). The
+  description states both. This closes the v0.5.3 TODO for `qwen/qwen4-max`.
+
 ## 2026-11-18 — resolve_usable, AI_MODEL_REGISTRY_FILE, migration impact report and consumer contract gate (v0.5.4 → v0.6.0, adapter + tooling, registry data unchanged)
 
 113 models (78 chat, 2 decision, 6 embedding, 14 image_gen, 13 realtime), 74 migrations, 7 providers.

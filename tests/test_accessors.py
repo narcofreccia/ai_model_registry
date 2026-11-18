@@ -324,6 +324,8 @@ def test_2026_11_18_newcomers_are_priced(registry):
     hy4 = registry.get_price("tencent/hy4")
     assert (hy4.input_per_1m, hy4.output_per_1m) == (0.417, 1.2505)
     assert hy4.variant("from_2027-01-01").input_per_1m == 0.834
+    qwen = registry.get_price("qwen/qwen4-max")
+    assert (qwen.input_per_1m, qwen.output_per_1m, qwen.cached_input_per_1m) == (1.425, 4.275, 0.07125)
     assert registry.get_price("glm-5.3-flashx").output_per_1m == 1.25
     assert registry.get_price("z-ai/glm-5.3-flashx").cached_input_per_1m == 0.075
 

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "schema_minor": 3,
-  "generated_at": "2026-11-18T20:30:00Z",
+  "generated_at": "2026-11-18T21:30:00Z",
   "providers": {
     "anthropic": {
       "name": "Anthropic",
@@ -1098,7 +1098,7 @@
     {
       "id": "qwen/qwen4-max",
       "name": "Qwen4 Max (OpenRouter)",
-      "description": "Flagship of Alibaba's Qwen4 series (on OpenRouter 2026-11-16; Alibaba direct id qwen4-max). 1,000,000 context, 131,072 max output; text/image/video in; reasoning on by default. Pricing null: OpenRouter's Alibaba endpoint lists 1.425 in / 4.275 out / 0.07125 cache read per 1M (a 5% OpenRouter discount), while Alibaba Model Studio lists 1.50 / 4.50 / 0.075 (International, Singapore) and 1.413 / 4.24 / 0.071 (other regions).",
+      "description": "Flagship of Alibaba's Qwen4 series (on OpenRouter 2026-11-16; Alibaba direct id qwen4-max). 1,000,000 context, 131,072 max output; text/image/video in; reasoning on by default. Price is OpenRouter's Alibaba endpoint rate: 1.425 in / 4.275 out / 0.07125 cache read per 1M, which the endpoint lists with a 5% discount (no end date published). Alibaba Model Studio's international (Singapore) list price is 1.50 / 4.50 / 0.075; other regions list 1.413 / 4.24 / 0.071. OpenRouter may route to a cheaper third-party host; the price here is the first-party endpoint rate.",
       "provider": "openrouter",
       "kind": "chat",
       "api_model_id": "qwen/qwen4-max",
@@ -1112,7 +1112,11 @@
       "max_reference_images": null,
       "voices": null,
       "status": "active",
-      "pricing": null
+      "pricing": {
+        "input_per_1m": 1.425,
+        "output_per_1m": 4.275,
+        "cached_input_per_1m": 0.07125
+      }
     },
     {
       "id": "meta/muse-ember",
