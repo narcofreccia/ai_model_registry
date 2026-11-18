@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "schema_minor": 3,
-  "generated_at": "2026-11-08T12:00:00Z",
+  "generated_at": "2026-11-18T12:00:00Z",
   "providers": {
     "anthropic": {
       "name": "Anthropic",
@@ -142,7 +142,7 @@
     {
       "id": "gpt-5.6-sol",
       "name": "GPT-5.6 Sol",
-      "description": "Frontier tier for the most demanding assignments. Prompts over 272K input tokens are billed at the long_context variant. Promotional price, published as available at least through 2026-11-21; no post-promotion rate published.",
+      "description": "Frontier tier for the most demanding assignments. Prompts over 272K input tokens are billed at the long_context variant. Promotional price, available until 2026-11-30 per OpenAI's pricing page; no post-promotion rate published.",
       "provider": "openai",
       "kind": "chat",
       "api_model_id": "gpt-5.6-sol",
@@ -649,13 +649,13 @@
     {
       "id": "gemini-3.5-flash-lite",
       "name": "Gemini 3.5 Flash Lite",
-      "description": "Google's fastest, most cost-effective 3.5 model for high-throughput tasks; successor to Gemini 3.1 Flash Lite (stable, released 2026-07-21). 1,048,576 input / 65,536 output tokens; text/image/video/audio/PDF in. thinking_level minimal (default)/low/medium/high; legacy thinking_budget still accepted, but not together with thinking_level (400). Temperature supported, Google recommends leaving it at 1.0.",
+      "description": "Google's fastest, most cost-effective 3.5 model for high-throughput tasks; successor to Gemini 3.1 Flash Lite (stable, released 2026-07-21). 1,048,576 input / 65,536 output tokens; text/image/video/audio/PDF in. thinking_level minimal (default)/low/medium/high; legacy thinking_budget still accepted, but not together with thinking_level (400). Google deprecated temperature/top_p/top_k on 2026-07-21, starting with this model and 3.6 Flash (ignored), so do not send them.",
       "provider": "google",
       "kind": "chat",
       "api_model_id": "gemini-3.5-flash-lite",
       "aliases": [],
       "reasoning": "google_budget",
-      "allows_temperature": true,
+      "allows_temperature": false,
       "responses_api": false,
       "server_web_tools": false,
       "vision": true,
@@ -884,6 +884,303 @@
             "note": "Off-peak: outside 01:00-04:00 and 06:00-10:00 UTC, Monday-Friday, excluding Chinese public holidays."
           }
         ]
+      }
+    },
+    {
+      "id": "claude-fable-5-2",
+      "name": "Claude Fable 5.2",
+      "description": "Anthropic's model for demanding reasoning and long-horizon agentic work; successor to Claude Fable 5.1 at a lower per-token price (released 2026-11-09). 1M context, 128K max output. Thinking always on (adaptive; effort low/medium/high/xhigh/max, default high); forced tool_choice any/tool rejected; omit temperature/top_p/top_k; requires 30-day data retention. Cache reads at 0.025x input. Retirement not sooner than 2027-11-09.",
+      "provider": "anthropic",
+      "kind": "chat",
+      "api_model_id": "claude-fable-5-2",
+      "aliases": [],
+      "reasoning": "adaptive",
+      "allows_temperature": false,
+      "responses_api": false,
+      "server_web_tools": true,
+      "vision": true,
+      "needs_pdf_rasterization": false,
+      "max_reference_images": null,
+      "voices": null,
+      "status": "active",
+      "pricing": {
+        "input_per_1m": 8.0,
+        "output_per_1m": 40.0,
+        "cached_input_per_1m": 0.2
+      }
+    },
+    {
+      "id": "gemini-4-carbon",
+      "name": "Gemini 4 Carbon",
+      "description": "Google's most capable Gemini 4 reasoning model, built for complex software engineering and autonomous multi-step agents (GA 2026-11-10, not on the free tier). One 1,048,576-token window shared by input, thinking and output; default max_output_tokens 65,536 (up to 1,048,576 with long decode). thinking_level low/medium (default)/high. Model page does not document temperature; Google deprecated temperature/top_p/top_k on 2026-07-21 (ignored on 3.6 Flash and 3.5 Flash-Lite, an HTTP 400 in later generations per Google), so do not send them. Implicit caching only; explicit cachedContents unsupported. Text/image/video/audio/PDF in, text out; Grounding with Google Search supported. Introductory price through 2026-11-30, standard rate from 2026-12-01 in the variant.",
+      "provider": "google",
+      "kind": "chat",
+      "api_model_id": "gemini-4-carbon",
+      "aliases": [],
+      "reasoning": "google_budget",
+      "allows_temperature": false,
+      "responses_api": false,
+      "server_web_tools": false,
+      "vision": true,
+      "needs_pdf_rasterization": false,
+      "max_reference_images": null,
+      "voices": null,
+      "status": "active",
+      "pricing": {
+        "input_per_1m": 2.0,
+        "output_per_1m": 10.0,
+        "cached_input_per_1m": 0.1,
+        "effective_from": "2026-11-10",
+        "variants": [
+          {
+            "condition": "from_2026-12-01",
+            "input_per_1m": 4.0,
+            "output_per_1m": 20.0,
+            "cached_input_per_1m": 0.2,
+            "note": "Standard pricing starting December 1, 2026 (introductory rate ends 2026-11-30)."
+          }
+        ]
+      }
+    },
+    {
+      "id": "gemini-4-hydrogen",
+      "name": "Gemini 4 Hydrogen",
+      "description": "Gemini 4 model with a free tier, the only one in the family (GA 2026-11-12). One 1,048,576-token window shared by input, thinking and output; default max_output_tokens 65,536 (up to 1,048,576 with long decode). thinking_level low/medium/high/xhigh (default high). Model page does not document temperature; Google deprecated temperature/top_p/top_k on 2026-07-21 (ignored on 3.6 Flash and 3.5 Flash-Lite, an HTTP 400 in later generations per Google), so do not send them. Implicit caching only; explicit cachedContents unsupported. Text/image/video/audio/PDF in, text out; Grounding with Google Search supported (not on the free tier). No scheduled price change published.",
+      "provider": "google",
+      "kind": "chat",
+      "api_model_id": "gemini-4-hydrogen",
+      "aliases": [],
+      "reasoning": "google_budget",
+      "allows_temperature": false,
+      "responses_api": false,
+      "server_web_tools": false,
+      "vision": true,
+      "needs_pdf_rasterization": false,
+      "max_reference_images": null,
+      "voices": null,
+      "status": "active",
+      "pricing": {
+        "input_per_1m": 1.5,
+        "output_per_1m": 7.5,
+        "cached_input_per_1m": 0.075
+      }
+    },
+    {
+      "id": "gpt-6.2-sol",
+      "name": "GPT-6.2 Sol",
+      "description": "Newer GPT-6 Sol for everyday coding and agent workflows (released 2026-11-17). 1.05M context (922K max input), 128K max output; reasoning effort none rejected (OpenAI: start at medium, use low in place of none/minimal); omit temperature/top_p (reasoning model). Text/image in, text out. Chat Completions, Responses and Batch; tool calling requires the Responses API. Prompts over 272K input tokens are billed at the long_context variant.",
+      "provider": "openai",
+      "kind": "chat",
+      "api_model_id": "gpt-6.2-sol",
+      "aliases": [],
+      "reasoning": "openai_effort",
+      "allows_temperature": false,
+      "responses_api": true,
+      "server_web_tools": true,
+      "vision": true,
+      "needs_pdf_rasterization": false,
+      "max_reference_images": null,
+      "voices": null,
+      "status": "active",
+      "pricing": {
+        "input_per_1m": 2.0,
+        "output_per_1m": 10.0,
+        "cached_input_per_1m": 0.1,
+        "variants": [
+          {
+            "condition": "long_context_gt_272k",
+            "input_per_1m": 4.0,
+            "output_per_1m": 15.0,
+            "cached_input_per_1m": 0.2,
+            "note": "Prompts with more than 272K input tokens: 2x input and cache rates, 1.5x output."
+          }
+        ]
+      }
+    },
+    {
+      "id": "gpt-6.2-astra",
+      "name": "GPT-6.2 Astra",
+      "description": "OpenAI's most capable model for demanding reasoning and coding; newer GPT-6 Astra at a lower price (released 2026-11-17). 1.05M context (922K max input), 128K max output; reasoning effort none rejected (OpenAI: start at medium, use low in place of none/minimal); omit temperature/top_p (reasoning model). Text/image in, text out. Chat Completions, Responses and Batch; tool calling requires the Responses API. Prompts over 272K input tokens are billed at the long_context variant.",
+      "provider": "openai",
+      "kind": "chat",
+      "api_model_id": "gpt-6.2-astra",
+      "aliases": [],
+      "reasoning": "openai_effort",
+      "allows_temperature": false,
+      "responses_api": true,
+      "server_web_tools": true,
+      "vision": true,
+      "needs_pdf_rasterization": false,
+      "max_reference_images": null,
+      "voices": null,
+      "status": "active",
+      "pricing": {
+        "input_per_1m": 8.0,
+        "output_per_1m": 40.0,
+        "cached_input_per_1m": 0.4,
+        "variants": [
+          {
+            "condition": "long_context_gt_272k",
+            "input_per_1m": 16.0,
+            "output_per_1m": 60.0,
+            "cached_input_per_1m": 0.8,
+            "note": "Prompts with more than 272K input tokens: 2x input and cache rates, 1.5x output."
+          }
+        ]
+      }
+    },
+    {
+      "id": "tencent/hy4",
+      "name": "Hy4 (OpenRouter)",
+      "description": "Tencent's flagship Hy4, the official release following Hy4 Preview (on OpenRouter 2026-11-04). 1,048,576 context, 65,536 max output; text/image in; reasoning with reasoning_effort. Base price is Tencent's launch rate (50% of list until 2026-12-31 23:59:59 Beijing time); the list rate is in the variant. OpenRouter may route to a cheaper third-party host; the price here is the first-party endpoint rate.",
+      "provider": "openrouter",
+      "kind": "chat",
+      "api_model_id": "tencent/hy4",
+      "aliases": [],
+      "reasoning": "openrouter_reasoning",
+      "allows_temperature": true,
+      "responses_api": false,
+      "server_web_tools": false,
+      "vision": true,
+      "needs_pdf_rasterization": false,
+      "max_reference_images": null,
+      "voices": null,
+      "status": "active",
+      "pricing": {
+        "input_per_1m": 0.417,
+        "output_per_1m": 1.2505,
+        "cached_input_per_1m": 0.021,
+        "effective_from": "2026-11-04",
+        "variants": [
+          {
+            "condition": "from_2027-01-01",
+            "input_per_1m": 0.834,
+            "output_per_1m": 2.501,
+            "cached_input_per_1m": 0.042,
+            "note": "Tencent list price; the 50% launch discount ends 2026-12-31 23:59:59 Beijing time (15:59:59 UTC)."
+          }
+        ]
+      }
+    },
+    {
+      "id": "tencent/hy4-flash",
+      "name": "Hy4 flash (OpenRouter)",
+      "description": "Cost-efficient Hy4 variant with roughly a quarter of the flagship's parameter count (on OpenRouter 2026-11-16). Weights on Hugging Face as tencent/Hy4-flash (Tencent Hy License). 1,048,576 context, 65,536 max output; text/image in; reasoning supported (no reasoning_effort). Base price is Tencent's launch rate (50% of list until 2026-11-30 12:00 Beijing time); the list rate is in the variant. OpenRouter may route to a cheaper third-party host; the price here is the first-party endpoint rate.",
+      "provider": "openrouter",
+      "kind": "chat",
+      "api_model_id": "tencent/hy4-flash",
+      "aliases": [],
+      "reasoning": "openrouter_reasoning",
+      "allows_temperature": true,
+      "responses_api": false,
+      "server_web_tools": false,
+      "vision": true,
+      "needs_pdf_rasterization": false,
+      "max_reference_images": null,
+      "voices": null,
+      "status": "active",
+      "pricing": {
+        "input_per_1m": 0.035,
+        "output_per_1m": 0.1405,
+        "cached_input_per_1m": 0.0015,
+        "effective_from": "2026-11-16",
+        "variants": [
+          {
+            "condition": "from_2026-11-30",
+            "input_per_1m": 0.07,
+            "output_per_1m": 0.281,
+            "cached_input_per_1m": 0.003,
+            "note": "Tencent list price; the 50% launch discount ends 2026-11-30 12:00 Beijing time (04:00 UTC)."
+          }
+        ]
+      }
+    },
+    {
+      "id": "qwen/qwen4-max",
+      "name": "Qwen4 Max (OpenRouter)",
+      "description": "Flagship of Alibaba's Qwen4 series (on OpenRouter 2026-11-16; Alibaba direct id qwen4-max). 1,000,000 context, 131,072 max output; text/image/video in; reasoning on by default. Pricing null: OpenRouter's Alibaba endpoint lists 1.425 in / 4.275 out / 0.07125 cache read per 1M (a 5% OpenRouter discount), while Alibaba Model Studio lists 1.50 / 4.50 / 0.075 (International, Singapore) and 1.413 / 4.24 / 0.071 (other regions).",
+      "provider": "openrouter",
+      "kind": "chat",
+      "api_model_id": "qwen/qwen4-max",
+      "aliases": [],
+      "reasoning": "openrouter_reasoning",
+      "allows_temperature": true,
+      "responses_api": false,
+      "server_web_tools": false,
+      "vision": true,
+      "needs_pdf_rasterization": false,
+      "max_reference_images": null,
+      "voices": null,
+      "status": "active",
+      "pricing": null
+    },
+    {
+      "id": "meta/muse-ember",
+      "name": "Muse Ember (OpenRouter)",
+      "description": "Meta's efficient execution model in the Muse family, for tool calls, coding-agent subtasks and routing (on OpenRouter 2026-11-09; Meta direct id muse-ember-1.0). 1,048,576 context; text/image/video/audio/PDF in, text out; reasoning effort supported. Price is Meta's Standard rate for requests up to 200K input tokens; Meta's own API bills larger requests at 0.30 in / 1.50 out / 0.012 cached, a tier OpenRouter's endpoint does not list. OpenRouter may route to a cheaper third-party host; the price here is the first-party endpoint rate.",
+      "provider": "openrouter",
+      "kind": "chat",
+      "api_model_id": "meta/muse-ember",
+      "aliases": [],
+      "reasoning": "openrouter_reasoning",
+      "allows_temperature": true,
+      "responses_api": false,
+      "server_web_tools": false,
+      "vision": true,
+      "needs_pdf_rasterization": false,
+      "max_reference_images": null,
+      "voices": null,
+      "status": "active",
+      "pricing": {
+        "input_per_1m": 0.1,
+        "output_per_1m": 0.5,
+        "cached_input_per_1m": 0.004
+      }
+    },
+    {
+      "id": "glm-5.3-flashx",
+      "name": "GLM-5.3 FlashX",
+      "description": "High-speed variant of GLM-5.3 Flash (up to 200 tokens/s). 1M context, 128K max output; text/image/video/file in. Thinking is always on (thinking.type only accepts enabled). Server-side web_search tool available (Z.ai tools array; not the OpenAI Responses shape). Not on the GLM Coding Plan.",
+      "provider": "zai",
+      "kind": "chat",
+      "api_model_id": "glm-5.3-flashx",
+      "aliases": [],
+      "reasoning": "glm_thinking",
+      "allows_temperature": true,
+      "responses_api": false,
+      "server_web_tools": true,
+      "vision": true,
+      "needs_pdf_rasterization": false,
+      "max_reference_images": null,
+      "voices": null,
+      "status": "active",
+      "pricing": {
+        "input_per_1m": 0.37,
+        "output_per_1m": 1.25,
+        "cached_input_per_1m": 0.075
+      }
+    },
+    {
+      "id": "z-ai/glm-5.3-flashx",
+      "name": "GLM-5.3 FlashX (OpenRouter)",
+      "description": "GLM-5.3 FlashX routed through OpenRouter (no Z.ai key needed). 1,048,576 context, 131,072 max output; text/image/video in. OpenRouter may route to a cheaper third-party host; the price here is the first-party endpoint rate.",
+      "provider": "openrouter",
+      "kind": "chat",
+      "api_model_id": "z-ai/glm-5.3-flashx",
+      "aliases": [],
+      "reasoning": "openrouter_reasoning",
+      "allows_temperature": true,
+      "responses_api": false,
+      "server_web_tools": false,
+      "vision": true,
+      "needs_pdf_rasterization": false,
+      "max_reference_images": null,
+      "voices": null,
+      "status": "active",
+      "pricing": {
+        "input_per_1m": 0.37,
+        "output_per_1m": 1.25,
+        "cached_input_per_1m": 0.075
       }
     },
     {
@@ -1133,7 +1430,7 @@
     {
       "id": "openai_gpt_image_2",
       "name": "GPT Image 2",
-      "description": "OpenAI's flagship image model. Near-perfect in-image text, up to 16 reference images, transparent backgrounds. Token rates (per 1M): image input 8.00, cached image input 2.00, image output 30.00; text input 5.00, cached text 1.25 (cached rates only via the Responses image_generation tool). Batch is half.",
+      "description": "OpenAI's GPT Image 2, superseded by the 2.6 pair. Near-perfect in-image text, up to 16 reference images, transparent backgrounds. Token rates (per 1M): image input 8.00, cached image input 2.00, image output 30.00; text input 5.00, cached text 1.25 (cached rates only via the Responses image_generation tool). Batch is half. Deprecated: OpenAI notice 2026-11-10, shutdown 2027-02-10 for gpt-image-2 and gpt-image-2-2026-04-21 (replacement gpt-image-2.6-sunburst or gpt-image-2.6-flare).",
       "provider": "openai",
       "kind": "image_gen",
       "api_model_id": "gpt-image-2",
@@ -1148,7 +1445,7 @@
       "needs_pdf_rasterization": false,
       "max_reference_images": 16,
       "voices": null,
-      "status": "active",
+      "status": "deprecated",
       "pricing": null
     },
     {
@@ -2469,7 +2766,7 @@
     {
       "id": "gpt-4o-mini-realtime-preview",
       "name": "GPT-4o Mini Realtime Preview",
-      "description": "Legacy small GPT-4o realtime preview. Deprecated but still callable.",
+      "description": "Legacy small GPT-4o realtime preview. Shut down 2026-05-07 (OpenAI names gpt-realtime-mini as the replacement).",
       "provider": "openai",
       "kind": "realtime",
       "api_model_id": "gpt-4o-mini-realtime-preview",
@@ -2499,7 +2796,7 @@
         "text",
         "audio"
       ],
-      "status": "deprecated",
+      "status": "retired",
       "pricing": {
         "audio_input_per_1m": 10.0,
         "audio_output_per_1m": 20.0,
@@ -2511,7 +2808,7 @@
     {
       "id": "gemini-3.1-flash-live-preview",
       "name": "Gemini 3.1 Flash Live",
-      "description": "Google's current Live API model for native-audio conversations. Deprecated: Google names gemini-3.8-live as the replacement (no shutdown date announced). Shuts down 2026-11-17 (replacement gemini-3.8-live).",
+      "description": "Google's Live API preview model for native-audio conversations (released 2026-03-11). Deprecated: Google names gemini-3.8-live as the replacement; no shutdown date announced.",
       "provider": "google",
       "kind": "realtime",
       "api_model_id": "gemini-3.1-flash-live-preview",
@@ -2747,7 +3044,7 @@
     {
       "id": "gemini-2.5-flash-native-audio-preview-12-2025",
       "name": "Gemini 2.5 Flash Native Audio (12-2025)",
-      "description": "Dated preview of the Gemini 2.5 Flash native-audio Live model. Deprecated: Google names gemini-3.8-live as the replacement (no shutdown date announced). Shuts down 2026-11-17 (replacement gemini-3.8-live).",
+      "description": "Dated preview of the Gemini 2.5 Flash native-audio Live model. Deprecated: shuts down 2027-03-31 (replacement gemini-3.8-live).",
       "provider": "google",
       "kind": "realtime",
       "api_model_id": "gemini-2.5-flash-native-audio-preview-12-2025",
@@ -2865,7 +3162,7 @@
     {
       "id": "jev-1.13",
       "name": "Jev 1.13",
-      "description": "TypeSafe's System One decision model (previous release; still current, no deprecation announced; jev-latest now resolves to jev-1.14.0). Not a chat model: it evaluates a text/JSON `state` against typed questions and returns calibrated answers, never text. Question types: noul (yes/no -> probability of yes), choice (up to 255 options -> chosen key, confidence and per-option probabilities), score (2-10 ordered rubric levels -> probability-weighted score). Text only; sampling parameters are ignored. Endpoint POST /v1/systemone.",
+      "description": "TypeSafe's System One decision model (previous release; still current, no deprecation announced; jev-latest now resolves to jev-1.14.0). Not a chat model: it evaluates a text/JSON `state` against typed questions and returns calibrated answers, never text. Question types: noul (yes/no -> probability of yes), choice (up to 255 options -> chosen key, confidence and per-option probabilities), score (2-10 ordered rubric levels -> probability-weighted score). Text and PNG/JPEG image input (images need the TypeSafe-Danger-Zone-Images: true header; TypeSafe labels image support Dreamer-ready, not production-ready). The TypeSafe-Danger-Zone-Long-Context: true header raises the per-request and per-question limits to 262k tokens at the same per-token price. Sampling parameters are ignored. Endpoint POST /v1/systemone.",
       "provider": "typesafe",
       "kind": "decision",
       "api_model_id": "jev-1.13.0",
@@ -2874,7 +3171,7 @@
       "allows_temperature": false,
       "responses_api": false,
       "server_web_tools": false,
-      "vision": false,
+      "vision": true,
       "needs_pdf_rasterization": false,
       "max_reference_images": null,
       "voices": null,
@@ -2898,7 +3195,7 @@
     {
       "id": "jev-1.14",
       "name": "Jev 1.14",
-      "description": "TypeSafe's System One decision model (available from 2026-10-14; jev-latest points here). Not a chat model: it evaluates a text/JSON `state` against typed questions and returns calibrated answers, never text. Question types: noul (yes/no -> probability of yes), choice (up to 255 options -> chosen key, confidence and per-option probabilities), score (2-10 ordered rubric levels -> probability-weighted score). Text only; sampling parameters are ignored. Endpoint POST /v1/systemone.",
+      "description": "TypeSafe's System One decision model (available from 2026-10-14; jev-latest points here). Not a chat model: it evaluates a text/JSON `state` against typed questions and returns calibrated answers, never text. Question types: noul (yes/no -> probability of yes), choice (up to 255 options -> chosen key, confidence and per-option probabilities), score (2-10 ordered rubric levels -> probability-weighted score). Text and PNG/JPEG image input (images need the TypeSafe-Danger-Zone-Images: true header; TypeSafe labels image support Dreamer-ready, not production-ready). The TypeSafe-Danger-Zone-Long-Context: true header raises the per-request and per-question limits to 262k tokens at the same per-token price. Sampling parameters are ignored. A Box question type (bounding box on an image) exists on 1.14, but TypeSafe does not label it production-ready, so it is not in question_types. Endpoint POST /v1/systemone.",
       "provider": "typesafe",
       "kind": "decision",
       "api_model_id": "jev-1.14.0",
@@ -2909,7 +3206,7 @@
       "allows_temperature": false,
       "responses_api": false,
       "server_web_tools": false,
-      "vision": false,
+      "vision": true,
       "needs_pdf_rasterization": false,
       "max_reference_images": null,
       "voices": null,
@@ -3005,6 +3302,8 @@
     "gemini-2.5-flash-native-audio-preview-12-2025": "gemini-3.8-live",
     "gemini-3.5-flash": "gemini-3.6-flash",
     "google_imagen_flash": "google_imagen_flash_2_1",
-    "deepseek/deepseek-v4-pro": "deepseek/deepseek-v4-pro-0813"
+    "deepseek/deepseek-v4-pro": "deepseek/deepseek-v4-pro-0813",
+    "openai_gpt_image_2": "openai_gpt_image_2_6_sunburst",
+    "openai/gpt-image-2": "openai_gpt_image_2_6_sunburst"
   }
 }

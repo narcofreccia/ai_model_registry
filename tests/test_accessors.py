@@ -35,6 +35,17 @@ TIDE_SHARE_CHAT_ORDER = [
     "gpt-6.1-terra",
     "deepseek/deepseek-v4-pro-0813",
     "deepseek/deepseek-v4.1-flash-1017",
+    "claude-fable-5-2",
+    "gemini-4-carbon",
+    "gemini-4-hydrogen",
+    "gpt-6.2-sol",
+    "gpt-6.2-astra",
+    "tencent/hy4",
+    "tencent/hy4-flash",
+    "qwen/qwen4-max",
+    "meta/muse-ember",
+    "glm-5.3-flashx",
+    "z-ai/glm-5.3-flashx",
 ]
 
 
@@ -52,7 +63,7 @@ def test_models_by_kind_and_provider(registry):
     by_kind = registry.models_by_kind()
     assert set(by_kind) == {"chat", "embedding", "image_gen", "realtime", "decision"}
     assert len(registry.models_by_kind("embedding")) == 6
-    assert [m.id for m in registry.models_by_provider("zai")] == ["glm-5.3-flash"]
+    assert [m.id for m in registry.models_by_provider("zai")] == ["glm-5.3-flash", "glm-5.3-flashx"]
     assert "anthropic" in registry.models_by_provider()
 
 
@@ -299,3 +310,24 @@ def test_google_successors_migrate(registry):
     assert registry.resolve("gemini-3.5-flash").id == "gemini-3.6-flash"
     assert registry.resolve("deepseek/deepseek-v4-pro").id == "deepseek/deepseek-v4-pro-0813"
     assert registry.get_price("deepseek/deepseek-v4-pro-0813").variant("off_peak").input_per_1m == 0.66
+
+
+# --- 2026-11-18 refresh ------------------------------------------------------
+def test_2026_11_18_newcomers_are_priced(registry):
+    assert registry.get_price("claude-fable-5-2").cached_input_per_1m == 0.2
+    astra = registry.price_for("gpt-6.2-astra", input_tokens=300_000)
+    assert (astra.input_per_1m, astra.output_per_1m, astra.cached_input_per_1m) == (16.0, 60.0, 0.8)
+    carbon = registry.get_price("gemini-4-carbon")
+    assert carbon.input_per_1m == 2.0
+    assert carbon.variant("from_2026-12-01").input_per_1m == 4.0
+    hy4 = registry.get_price("tencent/hy4")
+    assert (hy4.input_per_1m, hy4.output_per_1m) == (0.417, 1.2505)
+    assert hy4.variant("from_2027-01-01").input_per_1m == 0.834
+    assert registry.get_price("glm-5.3-flashx").output_per_1m == 1.25
+    assert registry.get_price("z-ai/glm-5.3-flashx").cached_input_per_1m == 0.075
+
+
+def test_gpt_image_2_deprecation_keeps_old_chains_alive(registry):
+    assert registry.get("openai_gpt_image_2").status == "deprecated"
+    for old in ("openai_gpt_image_2", "openai/gpt-image-2", "gpt-image-1.5", "gpt-image-1"):
+        assert registry.resolve_migration(old) == "openai_gpt_image_2_6_sunburst"

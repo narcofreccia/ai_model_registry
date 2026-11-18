@@ -44,7 +44,8 @@ def test_jev_facts_round_trip(registry):
     assert jev.kind == "decision"
     assert jev.provider == "typesafe"
     assert jev.api_model_id == "jev-1.13.0"
-    assert (jev.reasoning, jev.allows_temperature, jev.vision) == ("none", False, False)
+    # vision: text + PNG/JPEG since 2026-10-14 (opt-in header, see the description)
+    assert (jev.reasoning, jev.allows_temperature, jev.vision) == ("none", False, True)
     assert (jev.responses_api, jev.server_web_tools) == (False, False)
     assert jev.question_types == ("noul", "choice", "score")
     assert (jev.max_request_tokens, jev.max_state_question_tokens) == (64000, 32000)

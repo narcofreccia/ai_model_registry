@@ -2,6 +2,152 @@
 
 Dates are the promotion date (when `stable` was moved), not the merge date.
 
+## 2026-11-18 — Claude Fable 5.2, GPT-6.2 Sol + Astra, Gemini 4 Carbon + Hydrogen, Hy4 + Hy4 flash, Qwen4 Max, Muse Ember, GLM-5.3 FlashX, gpt-image-2 deprecated (v0.5.2 → v0.5.3, facts only, no schema change)
+
+113 models (78 chat, 2 decision, 6 embedding, 14 image_gen, 13 realtime), 76 migrations, 7 providers.
+Facts read from the providers' own pages on 2026-11-18 (OpenAI, Anthropic, Google, OpenRouter,
+Z.AI, TypeSafe, plus Tencent, Alibaba and Meta pricing pages for the new OpenRouter slugs).
+
+Deprecation review (2026-11-18):
+- OpenAI: besides the two changes below, no active id is on the deprecations page. Dates
+  unchanged: `gpt-5`, `gpt-5-mini`, `gpt-5-nano`, `o3` 2026-12-11; `gpt-image-1-mini` 2026-12-01;
+  `gpt-5.1`, `gpt-5.4-nano` 2027-04-01; the dated `gpt-4o` / `gpt-4o-mini` / `gpt-4.1` /
+  `gpt-4.1-mini` snapshots 2027-01-14. The page shows `gpt-image-1.5` shutting down 2026-12-01
+  while the registry already has it `retired`; left as is.
+- Anthropic: nothing deprecated since 2026-10-26. `claude-sonnet-4-5` retires 2026-11-30
+  (unchanged). Anthropic still lists `claude-opus-4-8`, `-4-7`, `-4-6`, `-4-5` and
+  `claude-sonnet-4-6` as Active; the registry keeps them `deprecated` (existing convention).
+  `claude-haiku-4-5` and `claude-opus-4-5` are past or near their "not sooner than" dates with
+  no notice.
+- Google: no active id deprecated. `gemini-3.1-flash-lite` 2027-05-07 unchanged.
+  `gemini-3.1-pro-preview` has no shutdown date and no stable successor.
+  `gemini-live-2.5-flash-native-audio` and `gemini-2.5-flash-native-audio-preview-09-2025`
+  appear on no Gemini API page; left as they are.
+- OpenRouter: all six existing slugs return 200; first-party endpoint prices unchanged
+  (`moonshotai/kimi-k3`, `moonshotai/kimi-k3.1-pro`, `z-ai/glm-5.3-flash`,
+  `deepseek/deepseek-v4-pro-0813`, `deepseek/deepseek-v4.1-flash-1017`).
+  `deepseek/deepseek-v4-pro` (deprecated) is served by third-party hosts only. No successor to
+  any carried slug (no DeepSeek snapshot after 1017, no Kimi K3.2/K4, no GLM 5.4/6).
+- Z.AI direct: `glm-5.3-flash` still current at 0.15 / 0.03 / 0.50.
+- TypeSafe: see **Changed**.
+
+**Added**
+
+| id | kind | api_model_id | price (USD per 1M unless noted) | source |
+|---|---|---|---|---|
+| `claude-fable-5-2` | chat | `claude-fable-5-2` | in 8.00 · cached 0.20 · out 40.00 | platform.claude.com/docs/en/about-claude/pricing + /models/overview + /models/fable-5-2/overview + /model-deprecations (released 2026-11-09) |
+| `gemini-4-carbon` | chat | `gemini-4-carbon` | 2.00 / 0.10 / 10.00 (intro through 2026-11-30); variant `from_2026-12-01` 4.00 / 0.20 / 20.00 | ai.google.dev/gemini-api/docs/pricing + /models/gemini-4-carbon + /changelog (GA 2026-11-10) |
+| `gemini-4-hydrogen` | chat | `gemini-4-hydrogen` | 1.50 / 0.075 / 7.50 | same pricing page + /models/gemini-4-hydrogen (GA 2026-11-12) |
+| `gpt-6.2-sol` | chat | `gpt-6.2-sol` | 2.00 / 0.10 / 10.00; `long_context_gt_272k` 4.00 / 0.20 / 15.00 | developers.openai.com/api/docs/pricing + /models/gpt-6.2-sol + /changelog (released 2026-11-17) |
+| `gpt-6.2-astra` | chat | `gpt-6.2-astra` | 8.00 / 0.40 / 40.00; `long_context_gt_272k` 16.00 / 0.80 / 60.00 | same + /models/gpt-6.2-astra (released 2026-11-17) |
+| `tencent/hy4` | chat | `tencent/hy4` | 0.417 / 0.021 / 1.2505 (Tencent launch rate, 50% of list); variant `from_2027-01-01` 0.834 / 0.042 / 2.501 | openrouter.ai/api/v1/models/tencent/hy4/endpoints (Tencent endpoint) + www.tencentcloud.com/document/product/1300/78937 (on OpenRouter 2026-11-04) |
+| `tencent/hy4-flash` | chat | `tencent/hy4-flash` | 0.035 / 0.0015 / 0.1405 (launch rate); variant `from_2026-11-30` 0.07 / 0.003 / 0.281 | same two pages (on OpenRouter 2026-11-16) |
+| `qwen/qwen4-max` | chat | `qwen/qwen4-max` | `null`, see TODO | openrouter.ai/api/v1/models/qwen/qwen4-max/endpoints + www.alibabacloud.com/help/en/model-studio/model-pricing (on OpenRouter 2026-11-16) |
+| `meta/muse-ember` | chat | `meta/muse-ember` | 0.10 / 0.004 / 0.50 | openrouter.ai/api/v1/models/meta/muse-ember/endpoints (Meta endpoint) + dev.meta.ai/docs/pricing-rate-limits (on OpenRouter 2026-11-09) |
+| `glm-5.3-flashx` | chat | `glm-5.3-flashx` | 0.37 / 0.075 / 1.25 | docs.z.ai/guides/overview/pricing + /guides/vlm/glm-5.3-flash.md |
+| `z-ai/glm-5.3-flashx` | chat | `z-ai/glm-5.3-flashx` | 0.37 / 0.075 / 1.25 (Z.AI endpoint) | openrouter.ai/api/v1/models/z-ai/glm-5.3-flashx/endpoints |
+
+The 11 chat models are appended after `deepseek/deepseek-v4.1-flash-1017` in the order above.
+
+`claude-fable-5-2` is cheaper than `claude-fable-5-1` (10 / 50). Adaptive thinking is always on
+(effort low..max, default high), temperature is not accepted, forced `tool_choice` is rejected,
+30-day data retention is required and retirement is not sooner than 2027-11-09. Flags are the same as
+`claude-fable-5-1`.
+
+`gemini-4-carbon` is not on the free tier; `gemini-4-hydrogen` is. Both accept implicit caching
+only, and both have `allows_temperature: false` because Google's 2026-07-21 changelog entry
+deprecates temperature/top_p/top_k and its "what's new in Gemini 3.6" page says they are ignored
+on 3.6 Flash and 3.5 Flash-Lite and return an HTTP 400 in later generations (neither Gemini 4
+model page documents temperature). `server_web_tools: false`
+matches the other Gemini entries although both pages list Grounding with Google Search.
+
+For GPT-6.2, reasoning effort `none` is rejected; OpenAI's pages do not list the full effort set
+for 6.2, so the descriptions do not claim one. Tool calling requires the Responses API.
+`needs_pdf_rasterization` is `false` (OpenAI's PDF guide: vision-capable models ingest PDFs
+natively). No dated snapshot ids are listed.
+
+Tencent: OpenRouter's Tencent endpoint equals Tencent's own 50% launch rate. The base price is the
+launch rate with `effective_from`; Tencent's list price is the dated variant. The `tencent/hy4`
+discount ends 2026-12-31 23:59:59 Beijing time; the `tencent/hy4-flash` discount ends 2026-11-30
+12:00 Beijing time. `tencent/hy4-flash` weights are on Hugging Face (`tencent/Hy4-flash`, Tencent
+Hy License); the weights of `tencent/hy4` could not be confirmed.
+
+`qwen/qwen4-max` has `pricing: null` because the two sources disagree in USD. OpenRouter's
+Alibaba endpoint lists 1.425 / 0.07125 / 4.275 (a 5% OpenRouter discount); Alibaba Model Studio
+lists 1.50 / 0.075 / 4.50 (International, Singapore) and 1.413 / 0.071 / 4.24 (other regions).
+Both are recorded in the description. Alibaba does not say the weights are open.
+
+`meta/muse-ember`: Meta's own API has an over-200K-input tier (0.30 / 0.012 / 1.50) that
+OpenRouter's endpoint does not list; it is in the description only, with no variant. The Meta
+direct id is `muse-ember-1.0`. Meta makes no open-weights claim for it.
+
+`glm-5.3-flashx`: thinking cannot be disabled (`thinking.type` only accepts `enabled`); 1M
+context, 128K max output. Z.AI's release notes give no release date.
+
+TODO: `qwen/qwen4-max` has `pricing: null`; fill it once the OpenRouter and Alibaba USD rates
+agree or one source is chosen.
+
+**Changed**
+- `openai_gpt_image_2` active → **deprecated**. developers.openai.com/api/docs/deprecations:
+  notice 2026-11-10, shutdown 2027-02-10, covers `gpt-image-2` and `gpt-image-2-2026-04-21`,
+  replacement `gpt-image-2.6-sunburst` or `gpt-image-2.6-flare`. New migrations
+  `openai_gpt_image_2` → `openai_gpt_image_2_6_sunburst` and `openai/gpt-image-2` →
+  `openai_gpt_image_2_6_sunburst` (alias key, same precedent as `openai/gpt-image-1.5`;
+  `resolve_migration` does not look up aliases). Consequence: the chains from `gpt-image-1.5`,
+  `openai/gpt-image-1.5`, `gpt-image-1`, `dall-e-2` and `dall-e-3` now end at
+  `openai_gpt_image_2_6_sunburst` instead of `openai_gpt_image_2`. `gpt-image-1-mini` still →
+  `openai_gpt_image_2_6_flare`. Consumers that map image ids to their own endpoint ids (fal) need
+  a 2.6 Sunburst mapping before they bump.
+- `gpt-4o-mini-realtime-preview` deprecated → **retired**. Same deprecations page: shut down
+  2026-05-07 (notice 2025-09-15, OpenAI's named replacement `gpt-realtime-mini`); the existing
+  migration → `gpt-realtime-2.1` is unchanged. (`gpt-4o-mini-realtime`, without `-preview`, is a
+  different id that shuts down 2027-01-20; it is not in the registry.)
+- `gpt-5.6-sol` description: the promotional price is "available until November 30, 2026" on the
+  pricing page (was "at least through 2026-11-21").
+- `jev-1.13`, `jev-1.14`: `vision` false → **true**. docs.typesafe.ai/models.md + /changelog.md
+  (2026-10-14) + /images.md: both accept text and PNG/JPEG images; images need the
+  `TypeSafe-Danger-Zone-Images: true` header and TypeSafe labels image support "Dreamer-ready",
+  not production-ready. The header `TypeSafe-Danger-Zone-Long-Context: true` raises the
+  per-request and per-question limits to 262k at the same price. The Box question type (bounding
+  box on an image) exists on 1.14 only, with the same not-production label, so `question_types`
+  is unchanged. There is no `jev-1.15`; `jev-latest` still → `jev-1.14.0`; price and limits are
+  unchanged. Checked: no consumer reads `vision` for decision models.
+- `generated_at` → 2026-11-18.
+
+**Fixed**
+- `gemini-3.1-flash-live-preview` and `gemini-2.5-flash-native-audio-preview-12-2025`: the
+  2026-11-17 shutdown recorded on 2026-10-26 did not happen. The Gemini deprecations page on
+  2026-11-18 shows no shutdown date announced for the first and 2027-03-31 for the second;
+  replacement `gemini-3.8-live` for both. Descriptions corrected; both stay **deprecated**.
+  Google's changelog has no entry for the date change.
+- `gemini-3.5-flash-lite` `allows_temperature` true → **false**; the description no longer says
+  temperature is supported. aistudio.google.com/docs/whats-new-gemini-3.6 (linked from the model
+  page): "Starting with Gemini 3.6 Flash and Gemini 3.5 Flash-Lite" the parameters
+  `temperature`, `top_p` and `top_k` "are deprecated and ignored"; "Remove these parameters from
+  all requests." The model now matches `gemini-3.6-flash` and `gemini-3.8-flash`. Price unchanged.
+
+Re-checked, unchanged: every active OpenAI chat price (`gpt-5.6-sol`, `gpt-5.6-terra`,
+`gpt-5.6-luna`, `gpt-6-astra`, `gpt-6-sol`, `gpt-6-luna`, `gpt-6.1-sol`, `gpt-6.1-terra`),
+realtime `gpt-realtime-2.1`, `gpt-realtime-2.1-mini` and `gpt-audio-1.5`, every active
+Anthropic price, `gemini-4-argon`, `gemini-3.8-flash`, `gemini-3.6-flash`,
+`gemini-3.5-flash-lite` (price), `gemini-3.1-pro-preview`, the Google image and Live models,
+`gemini-embedding-2`, and the OpenAI embeddings.
+
+Not added:
+- `gemini-decision-1` (Google Decisions API, released 2026-11-11, 0.10 per 1M input): the
+  maintainer's call for now; limits are not published.
+- `claude-mythos-5-2` (released 2026-11-09, same price as `claude-fable-5-2`) and `gpt-6-cyber`:
+  verified-access only.
+- `z-ai/glm-5.3-flashx-legal` and `glm-5.3-flashx-legal`: specialised variant, same price as
+  FlashX.
+- `kimi-k3.1-pro-highspeed` (4.00 / 0.20 / 20.00): an OpenRouter endpoint of the existing
+  `moonshotai/kimi-k3.1-pro` slug, not a slug. Moonshot now prices cache writes separately (K3.1
+  Pro 2.00 for 5m / 4.00 for 1h); the schema has no cache-write field.
+- `thinkingmachines/inkling-2-small`: no first-party endpoint on OpenRouter.
+- No matching kind in the schema: OpenAI `gpt-live-1`, `gpt-realtime-translate`,
+  `gpt-transcribe`, `gpt-live-transcribe`, `gpt-realtime-whisper`; Google
+  `gemini-omni-1.2-flash` (video), plus the TTS / transcribe models already listed on 2026-10-26.
+
 ## 2026-11-08 — GPT Image 2.6 Sunburst + Flare (v0.5.1 → v0.5.2, facts only, no schema change)
 
 102 models (67 chat, 2 decision, 6 embedding, 14 image_gen, 13 realtime), 74 migrations, 7 providers.
