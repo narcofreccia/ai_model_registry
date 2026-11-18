@@ -203,7 +203,8 @@ def test_chat_pricing_is_not_flagged_realtime(registry):
 def test_realtime_migrations_chain_to_the_flagship(registry):
     assert registry.resolve_migration("gpt-realtime-1.5") == "gpt-realtime-2.1"
     assert registry.resolve_migration("gpt-4o-realtime-preview") == "gpt-realtime-2.1"
-    assert registry.resolve_migration("gpt-4o-mini-realtime-preview") == "gpt-realtime-2.1"
+    # the retired mini preview stays in the mini tier (v0.5.4)
+    assert registry.resolve_migration("gpt-4o-mini-realtime-preview") == "gpt-realtime-2.1-mini"
     # Google names gemini-3.8-live as the replacement for both Live previews
     for preview in (
         "gemini-2.5-flash-native-audio-preview-09-2025",
@@ -327,7 +328,10 @@ def test_2026_11_18_newcomers_are_priced(registry):
     assert registry.get_price("z-ai/glm-5.3-flashx").cached_input_per_1m == 0.075
 
 
-def test_gpt_image_2_deprecation_keeps_old_chains_alive(registry):
-    assert registry.get("openai_gpt_image_2").status == "deprecated"
-    for old in ("openai_gpt_image_2", "openai/gpt-image-2", "gpt-image-1.5", "gpt-image-1"):
-        assert registry.resolve_migration(old) == "openai_gpt_image_2_6_sunburst"
+def test_gpt_image_2_stays_active_until_consumers_have_2_6(registry):
+    # OpenAI shuts gpt-image-2 down 2027-02-10. Deprecating it chains every retired image
+    # id on to 2.6 Sunburst, which broke consumers without a 2.6 mapping (v0.5.3 -> v0.5.4).
+    assert registry.get("openai_gpt_image_2").status == "active"
+    assert "openai_gpt_image_2" not in registry.migrations
+    for old in ("gpt-image-1.5", "openai/gpt-image-1.5", "gpt-image-1", "dall-e-3"):
+        assert registry.resolve_migration(old) == "openai_gpt_image_2"

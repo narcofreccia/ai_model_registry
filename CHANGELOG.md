@@ -2,6 +2,33 @@
 
 Dates are the promotion date (when `stable` was moved), not the merge date.
 
+## 2026-11-18 — gpt-image-2 back to active, gpt-4o-mini-realtime-preview migrates to the mini tier (v0.5.3 → v0.5.4, facts only, no schema change)
+
+113 models (78 chat, 2 decision, 6 embedding, 14 image_gen, 13 realtime), 74 migrations, 7 providers.
+Same-day patch for two migration effects of v0.5.3 found while bumping the consumers. No provider
+fact changed; the pages are the ones read for v0.5.3.
+
+**Changed**
+- `openai_gpt_image_2` deprecated → **active** again, and its two migrations
+  (`openai_gpt_image_2`, `openai/gpt-image-2` → `openai_gpt_image_2_6_sunburst`) are removed.
+  OpenAI's notice stands (2026-11-10, shutdown 2027-02-10, replacement `gpt-image-2.6-sunburst`
+  or `gpt-image-2.6-flare`) and stays in the description. Reason: `resolve_migration` follows a
+  chain to its end, so deprecating `gpt-image-2` sent every retired image id (`gpt-image-1.5`,
+  `openai/gpt-image-1.5`, `gpt-image-1`, `dall-e-2`, `dall-e-3`) on to 2.6 Sunburst. Consumers
+  that fetch `stable` at runtime and have no 2.6 mapping broke without a pin bump: ndr_backend
+  answered HTTP 400 for a stored `openai/gpt-image-1.5`, and tide_backend's image picker (active
+  models only) lost its only OpenAI entry. The chains end at `openai_gpt_image_2` again.
+- `gpt-4o-mini-realtime-preview` migration `gpt-realtime-2.1` → **`gpt-realtime-2.1-mini`**. The
+  migration only took effect when the model became `retired` in v0.5.3; the mini tier (audio
+  10 / 20 per 1M) is the like-for-like successor, not the flagship (32 / 64). OpenAI's named
+  replacement is `gpt-realtime-mini`, which is not a registry id.
+- `generated_at` → 2026-11-18T20:30:00Z.
+
+TODO: deprecate `openai_gpt_image_2` (migration → `openai_gpt_image_2_6_sunburst`) once
+tide_backend, ndr_backend and ndr_backend_ai_assistant carry a 2.6 Sunburst mapping, and before
+2027-02-10. A status change that lengthens a migration chain needs every consumer of the old
+ids checked first.
+
 ## 2026-11-18 — Claude Fable 5.2, GPT-6.2 Sol + Astra, Gemini 4 Carbon + Hydrogen, Hy4 + Hy4 flash, Qwen4 Max, Muse Ember, GLM-5.3 FlashX, gpt-image-2 deprecated (v0.5.2 → v0.5.3, facts only, no schema change)
 
 113 models (78 chat, 2 decision, 6 embedding, 14 image_gen, 13 realtime), 76 migrations, 7 providers.

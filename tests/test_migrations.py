@@ -34,9 +34,8 @@ def registry():
         ("claude-sonnet-4-5-20250514", "claude-sonnet-5"),  # ndr's wrong date suffix
         ("claude-sonnet-4-6", "claude-sonnet-5"),
         ("claude-opus-4-6", "claude-opus-5"),
-        # gpt-image-2 was deprecated 2026-11-10, so the chain runs on to 2.6 Sunburst
-        ("gpt-image-1.5", "openai_gpt_image_2_6_sunburst"),
-        ("openai/gpt-image-1.5", "openai_gpt_image_2_6_sunburst"),
+        ("gpt-image-1.5", "openai_gpt_image_2"),
+        ("openai/gpt-image-1.5", "openai_gpt_image_2"),
     ],
 )
 def test_known_migrations_resolve(registry, old, expected):

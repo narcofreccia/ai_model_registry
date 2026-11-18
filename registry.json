@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "schema_minor": 3,
-  "generated_at": "2026-11-18T12:00:00Z",
+  "generated_at": "2026-11-18T20:30:00Z",
   "providers": {
     "anthropic": {
       "name": "Anthropic",
@@ -1430,7 +1430,7 @@
     {
       "id": "openai_gpt_image_2",
       "name": "GPT Image 2",
-      "description": "OpenAI's GPT Image 2, superseded by the 2.6 pair. Near-perfect in-image text, up to 16 reference images, transparent backgrounds. Token rates (per 1M): image input 8.00, cached image input 2.00, image output 30.00; text input 5.00, cached text 1.25 (cached rates only via the Responses image_generation tool). Batch is half. Deprecated: OpenAI notice 2026-11-10, shutdown 2027-02-10 for gpt-image-2 and gpt-image-2-2026-04-21 (replacement gpt-image-2.6-sunburst or gpt-image-2.6-flare).",
+      "description": "OpenAI's GPT Image 2. Near-perfect in-image text, up to 16 reference images, transparent backgrounds. Token rates (per 1M): image input 8.00, cached image input 2.00, image output 30.00; text input 5.00, cached text 1.25 (cached rates only via the Responses image_generation tool). Batch is half. OpenAI deprecation notice 2026-11-10: shuts down 2027-02-10 for gpt-image-2 and gpt-image-2-2026-04-21 (replacement gpt-image-2.6-sunburst or gpt-image-2.6-flare); still active here until consumers are wired for the 2.6 pair.",
       "provider": "openai",
       "kind": "image_gen",
       "api_model_id": "gpt-image-2",
@@ -1445,7 +1445,7 @@
       "needs_pdf_rasterization": false,
       "max_reference_images": 16,
       "voices": null,
-      "status": "deprecated",
+      "status": "active",
       "pricing": null
     },
     {
@@ -2766,7 +2766,7 @@
     {
       "id": "gpt-4o-mini-realtime-preview",
       "name": "GPT-4o Mini Realtime Preview",
-      "description": "Legacy small GPT-4o realtime preview. Shut down 2026-05-07 (OpenAI names gpt-realtime-mini as the replacement).",
+      "description": "Legacy small GPT-4o realtime preview. Shut down 2026-05-07 (OpenAI names gpt-realtime-mini as the replacement; migrates to gpt-realtime-2.1-mini).",
       "provider": "openai",
       "kind": "realtime",
       "api_model_id": "gpt-4o-mini-realtime-preview",
@@ -3293,7 +3293,7 @@
     "gpt-realtime-2": "gpt-realtime-2.1",
     "gpt-realtime-1.5": "gpt-realtime-2",
     "gpt-4o-realtime-preview": "gpt-realtime-2.1",
-    "gpt-4o-mini-realtime-preview": "gpt-realtime-2.1",
+    "gpt-4o-mini-realtime-preview": "gpt-realtime-2.1-mini",
     "gemini-2.5-flash-native-audio-preview-09-2025": "gemini-2.5-flash-native-audio-preview-12-2025",
     "zai/glm-5.3-flash": "z-ai/glm-5.3-flash",
     "models/text-embedding-004": "gemini-embedding-2",
@@ -3302,8 +3302,6 @@
     "gemini-2.5-flash-native-audio-preview-12-2025": "gemini-3.8-live",
     "gemini-3.5-flash": "gemini-3.6-flash",
     "google_imagen_flash": "google_imagen_flash_2_1",
-    "deepseek/deepseek-v4-pro": "deepseek/deepseek-v4-pro-0813",
-    "openai_gpt_image_2": "openai_gpt_image_2_6_sunburst",
-    "openai/gpt-image-2": "openai_gpt_image_2_6_sunburst"
+    "deepseek/deepseek-v4-pro": "deepseek/deepseek-v4-pro-0813"
   }
 }
