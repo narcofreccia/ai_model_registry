@@ -5,6 +5,7 @@ The list lives in `consumers.json` at the repo root (gitignored: the paths are
 machine-specific; the shape is in `consumers.example.json`).
 
     python3 scripts/consumers.py status              # committed pin, adapter version, can it read `stable`?
+                                                     # + whether it has a contract_test / registry_test
     python3 scripts/consumers.py discover            # scan sibling dirs for pins
     python3 scripts/consumers.py discover --write    # ...and add new ones to consumers.json
 
@@ -43,10 +44,34 @@ class Consumer:
     test_cwd: str = "."
     test: list[str] = field(default_factory=lambda: ["-m", "pytest", "-q"])
     followups: list[str] = field(default_factory=list)
+    contract_test: list[str] | None = None  # release gate, run against the CANDIDATE registry
+    registry_test: list[str] | None = None  # fast subset `update_consumers.py --verify` runs
 
     @property
     def root(self) -> Path:
         return (REPO / self.path).resolve()
+
+    @property
+    def python_path(self) -> Path:
+        return self.root / self.python
+
+    @property
+    def test_dir(self) -> Path:
+        return self.root / self.test_cwd
+
+
+def test_command(consumer: Consumer, full: bool = False) -> tuple[str, list[str]]:
+    """(field name, args) for a pin-bump verify: `registry_test` when defined, else `test`."""
+    if consumer.registry_test and not full:
+        return "registry_test", consumer.registry_test
+    return "test", consumer.test
+
+
+def gate_markers(consumer: Consumer) -> str:
+    """One status line: is the release gated on this repo, and how fast is its verify."""
+    gate = "contract_test (gated)" if consumer.contract_test else "no contract_test (not gated)"
+    verify = "registry_test (fast verify)" if consumer.registry_test else "no registry_test (verify runs the full test)"
+    return f"{gate}, {verify}"
 
 
 def load_consumers(path: Path = CONSUMERS_PATH) -> list[Consumer]:
@@ -187,6 +212,7 @@ def cmd_status(_: argparse.Namespace) -> int:
             mark = "=" if sha == stable else ("ok" if ok else "!!")
             bad += not ok
             print(f"{consumer.name:26} {mark:2} {sha[:10]}  adapter {adapter_version(sha) or '?':8} {why}")
+        print(f"{'':26}    {gate_markers(consumer)}")
         if len(shas) > 1:
             print(f"{'':26}    committed pin files disagree: {pins}")
         working = shas_of(consumer_pins(consumer))

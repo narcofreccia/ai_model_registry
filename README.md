@@ -14,7 +14,7 @@ live in [MAINTAINING.md](MAINTAINING.md).
 | `registry.json` | the single artifact consumers read (the whole contract) |
 | `schema/registry.schema.json` | JSON Schema draft 2020-12 |
 | `scripts/validate.py` | schema + invariant checks (CI gate) |
-| `scripts/release.py` | tag + promote to `stable` with every safety check ([MAINTAINING.md](MAINTAINING.md)) |
+| `scripts/release.py` | tag + promote to `stable` with every safety check, migration impact report and consumer contract gate ([MAINTAINING.md](MAINTAINING.md)) |
 | `scripts/consumers.py`, `scripts/update_consumers.py` | which repos pin this package; move them all to one commit |
 | `src/ai_model_registry/` | optional Python adapter (`pip install`-able) |
 
@@ -43,8 +43,9 @@ ai-model-registry @ git+https://github.com/narcofreccia/ai_model_registry.git@<4
 from ai_model_registry import load
 
 registry = load(cache_dir="/tmp/model_registry", fetch=True)   # offline-safe
-model = registry.resolve("gpt-4o")                # migrated -> gpt-5.6-terra
+model = registry.usable("gpt-image-1.5")          # what to call now: retired -> openai_gpt_image_2
 print(model.api_model_id, model.responses_api)    # what to send, how to send it
+latest = registry.resolve("gpt-4o")               # latest successor -> gpt-5.6-terra
 price = registry.get_price("claude-opus-5")       # -> $5 / $25 per 1M
 chat = [m for m in registry.models_by_kind("chat") if m.status == "active"]
 ```
@@ -62,14 +63,23 @@ chat = [m for m in registry.models_by_kind("chat") if m.status == "active"]
 A failed fetch, an unreachable network or a corrupt file is logged and skipped, never
 raised, as long as a fallback remains. Only a total failure of all four raises.
 
+**Override (adapter 0.6.0+):** when the environment variable `AI_MODEL_REGISTRY_FILE`
+(`ai_model_registry.OVERRIDE_ENV`) is set to a non-empty path, `load()` reads exactly that
+file whatever its arguments say: no fetch, no cache read or write, no fallback; a missing or
+invalid file raises `RuntimeError`. The release gate uses it to run each consumer's contract
+test against a candidate registry; tooling detects support with
+`hasattr(ai_model_registry, "OVERRIDE_ENV")`.
+
 ### Registry API
 
 | call | returns |
 |---|---|
 | `.providers` / `.models` / `.migrations` | raw data |
 | `.get(id)` | model by id → alias → `api_model_id` (no migration applied) |
-| `.resolve_migration(id)` | current id (chained, cycle-safe) |
-| `.resolve(id)` | migrate, then look up |
+| `.resolve_migration(id)` | latest successor id: the chain followed to its end, whatever the hops' status (cycle-safe) |
+| `.resolve(id)` | `get(resolve_migration(id))` |
+| `.resolve_usable(id)` | the id to **call** now: an active/deprecated id as given; a retired or unknown id steps along the chain to the first non-retired model (cycle-safe) |
+| `.usable(id)` | `get(resolve_usable(id))` |
 | `.models_by_kind(kind=None)` / `.models_by_provider(p=None)` | list, or dict of all |
 | `.get_price(id)` | current base `Pricing`, or `None` when unpriced |
 | `.price_for(id, input_tokens=None, conditions=())` | the rate for ONE request: base + the applicable `long_context_gt_<N>k` card + any named variants (e.g. `image_size_4k`); `None` when unpriced |
@@ -112,9 +122,13 @@ interchangeable (e.g. Nano Banana 2 Lite is 1K only, Pro has no 1:4/4:1/1:8/8:1)
   with a warning). Adapters **before 0.4.0** type `kind` as a closed Literal and reject
   the whole registry when it contains `decision` — `load()` then falls back to an older
   source. Bump the adapter pin together with any snapshot that carries a new kind.
-- **`get_price(id)` migrates first.** For a deprecated-but-still-callable id, that returns
-  the *successor's* rates. A biller charging that id verbatim must read
-  `registry.get(id).pricing` instead.
+- **Call `resolve_usable(id)` / `usable(id)`, not `resolve_migration`, before calling a
+  model.** The full chain skips over a deprecated model that still answers, so a release that
+  deprecates a hop sends every older stored id to a successor your app may not be set up
+  for. `resolve_migration` answers "what replaces this", not "what do I call".
+- **`get_price(id)` migrates first** (the full chain). For a deprecated-but-still-callable id,
+  that returns the *successor's* rates. A biller charging the model it calls must read
+  `registry.usable(id).pricing` (or `registry.get(id).pricing` for an id it calls verbatim).
 - **Ignore unknown `pricing.variants[].condition` values.** The vocabulary is open
   (`off_peak`, `batch`, `long_context_gt_200k`, …); a new condition must never break you.
   Fall back to the base rate when you don't recognise one.

@@ -4,12 +4,15 @@ nothing is committed or pushed — review and commit in each repo yourself.
 
     python3 scripts/update_consumers.py --dry-run          # show what would change
     python3 scripts/update_consumers.py                    # pin -> commit `stable` points at
-    python3 scripts/update_consumers.py --verify           # ...then reinstall + run each test suite
+    python3 scripts/update_consumers.py --verify           # ...then reinstall + run each registry_test (else test)
+    python3 scripts/update_consumers.py --verify --full    # ...run each repo's full `test` instead
     python3 scripts/update_consumers.py --sha <sha> --only tide_reel,tide_share
 
 Per consumer (see consumers.json): rewrite the pin in every `pin_files` entry and, when
 the repo vendors a `snapshot`, overwrite it with that commit's registry.json — pin and
-snapshot move together, never one without the other.
+snapshot move together, never one without the other. `--verify` runs the repo's
+`registry_test` (a fast subset covering its registry integration) when it defines one,
+else its full `test`; `--full` always runs `test`.
 """
 
 from __future__ import annotations
@@ -28,6 +31,7 @@ from consumers import (
     adapter_version,
     consumer_pins,
     shas_of,
+    test_command,
     fetch_tags,
     git,
     load_consumers,
@@ -80,8 +84,8 @@ def update(consumer: Consumer, sha: str, registry_bytes: bytes, dry_run: bool) -
     return touched
 
 
-def verify(consumer: Consumer, sha: str) -> bool:
-    python = consumer.root / consumer.python
+def verify(consumer: Consumer, sha: str, full: bool) -> bool:
+    python = consumer.python_path
     if not python.exists():
         print(f"    !! {consumer.python} not found — skipping install + tests")
         return False
@@ -93,12 +97,13 @@ def verify(consumer: Consumer, sha: str) -> bool:
     if install.returncode != 0:
         print(f"    !! pip install failed:\n{install.stderr[-2000:]}")
         return False
+    which, args = test_command(consumer, full)
     tests = subprocess.run(
-        [str(python), *consumer.test],
-        cwd=consumer.root / consumer.test_cwd, capture_output=True, text=True,
+        [str(python), *args],
+        cwd=consumer.test_dir, capture_output=True, text=True,
     )
     tail = (tests.stdout or tests.stderr).strip().splitlines()[-1:] or ["(no output)"]
-    print(f"    tests: {'PASS' if tests.returncode == 0 else 'FAIL'} — {tail[0]}")
+    print(f"    {which}: {'PASS' if tests.returncode == 0 else 'FAIL'} — {tail[0]}")
     if tests.returncode != 0:
         print("\n".join("      " + line for line in tests.stdout.strip().splitlines()[-25:]))
     return tests.returncode == 0
@@ -110,9 +115,12 @@ def main() -> int:
     target.add_argument("--sha", help="commit to pin (must be pushed)")
     target.add_argument("--ref", default="stable", help="remote tag/branch to resolve (default: stable)")
     parser.add_argument("--only", help="comma-separated consumer names")
-    parser.add_argument("--verify", action="store_true", help="reinstall the pin and run each repo's tests")
+    parser.add_argument("--verify", action="store_true", help="reinstall the pin and run each repo's registry_test (else test)")
+    parser.add_argument("--full", action="store_true", help="with --verify: run the full `test` even where a registry_test exists")
     parser.add_argument("--dry-run", action="store_true", help="print the plan, change nothing")
     args = parser.parse_args()
+    if args.full and not args.verify:
+        parser.error("--full only applies with --verify")
 
     consumers = load_consumers()
     if args.only:
@@ -144,7 +152,7 @@ def main() -> int:
         touched = update(consumer, sha, registry_bytes, args.dry_run)
         old = ", ".join(s[:10] for s in before) or "none"
         print(f"    {old} -> {sha[:10]}: " + (", ".join(touched) if touched else "already up to date"))
-        passed = verify(consumer, sha) if args.verify and not args.dry_run else None
+        passed = verify(consumer, sha, args.full) if args.verify and not args.dry_run else None
         for followup in consumer.followups:
             print(f"    follow-up: {followup}")
         results.append((consumer, "changed" if touched else "same", passed))
@@ -152,6 +160,8 @@ def main() -> int:
     print("\nsummary")
     for consumer, state, passed in results:
         tests = {True: "tests pass", False: "TESTS FAIL", None: ""}[passed]
+        if passed is not None:
+            tests += f" ({test_command(consumer, args.full)[0]})"
         print(f"  {consumer.name:26} {state:8} {tests}")
     if not args.dry_run and any(s == "changed" for _, s, _ in results):
         print("\nNothing was committed. In each changed repo: review `git diff`, commit, deploy.")

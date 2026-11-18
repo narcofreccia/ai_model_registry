@@ -24,3 +24,11 @@ def make_registry_file(tmp_path, registry_dict):
         return path
 
     return _make
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _no_registry_override():
+    """A stray AI_MODEL_REGISTRY_FILE in the shell must not redirect these tests."""
+    with pytest.MonkeyPatch.context() as patch:
+        patch.delenv("AI_MODEL_REGISTRY_FILE", raising=False)
+        yield

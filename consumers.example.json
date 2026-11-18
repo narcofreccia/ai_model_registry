@@ -1,5 +1,5 @@
 {
-  "_comment": "Copy to consumers.json (gitignored). Paths are relative to this repo. `python` and `test_cwd` are relative to the consumer's `path`; `test` runs as `<python> <test...>` from `test_cwd`.",
+  "_comment": "Copy to consumers.json (gitignored). Paths are relative to this repo. `python` and `test_cwd` are relative to the consumer's `path`; `test`, `contract_test` and `registry_test` run as `<python> <args...>` from `test_cwd`. Optional: `contract_test` = fast invariant test release.py runs against the CANDIDATE registry (AI_MODEL_REGISTRY_FILE) and stops on; `registry_test` = fast subset covering the registry integration that `update_consumers.py --verify` runs instead of `test` (unless --full).",
   "consumers": [
     {
       "name": "example_app",
@@ -9,6 +9,8 @@
       "python": "venv/bin/python",
       "test_cwd": ".",
       "test": ["-m", "pytest", "-q"],
+      "contract_test": ["-m", "pytest", "-q", "tests/test_model_registry_contract.py"],
+      "registry_test": ["-m", "pytest", "-q", "tests/test_model_registry_contract.py", "tests/test_model_catalog.py"],
       "followups": ["commit the pin and the snapshot together"]
     }
   ]

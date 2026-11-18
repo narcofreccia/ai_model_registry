@@ -8,21 +8,29 @@ Steps, each one stopping the release on failure:
   1. preflight  on main, clean tree, not behind origin/main, versions agree,
                 tag v<version> unused, CHANGELOG top section is v<version> and dated
   2. checks     scripts/validate.py + pytest
-  3. consumers  refuse if this release would newly break a repo in consumers.json: its
+  3. impact     what changes for ids consumers already store, vs `stable`: status changes,
+                ids now CALLED as another model (resolve_usable), ids whose full chain moved
+                (resolve_migration, i.e. get_price). Informational, never stops the release.
+  4. consumers  refuse if this release would newly break a repo in consumers.json: its
                 *committed* pin reads the current `stable` but not this registry
                 (uncommitted pin edits don't count; override: --force-lagging-consumers).
                 Repos that are already broken are listed, not blocking.
-  4. review     print the active models per provider and ask for confirmation that the
+  5. contract   run each consumer's `contract_test` (its WORKING TREE, its venv) with
+                AI_MODEL_REGISTRY_FILE pointing at this registry.json; any failure stops the
+                release, dry run included (override: --skip-contract-tests). Consumers with no
+                contract_test, or whose adapter predates the override, are listed, not blocking.
+  6. review     print the active models per provider and ask for confirmation that the
                 deprecation review is done (skip the prompt: --yes)
-  5. publish    annotated tag, push main + tag, `gh workflow run ci.yml -f promote=true`,
+  7. publish    annotated tag, push main + tag, `gh workflow run ci.yml -f promote=true`,
                 watch the run
-  6. verify     remote `stable` == HEAD and the raw URL serves this registry
+  8. verify     remote `stable` == HEAD and the raw URL serves this registry
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import subprocess
 import sys
@@ -30,10 +38,13 @@ import time
 import urllib.request
 from collections import defaultdict
 
+import impact  # puts this repo's src/ on sys.path
+from ai_model_registry import OVERRIDE_ENV
 from consumers import (
     CONSUMERS_PATH,
     RAW_URL,
     REPO,
+    Consumer,
     adapter_accepts,
     fetch_tags,
     git,
@@ -44,6 +55,9 @@ from consumers import (
 )
 
 PYTHON = REPO / ".venv" / "bin" / "python"
+CONTRACT_TIMEOUT_SECONDS = 300
+# exit 0: the installed adapter knows the override; 3: it predates it
+SUPPORTS_OVERRIDE = "import sys, ai_model_registry as m; sys.exit(0 if hasattr(m, 'OVERRIDE_ENV') else 3)"
 
 
 def step(title: str) -> None:
@@ -147,6 +161,95 @@ def consumer_gate(registry: dict, force: bool) -> None:
     print("   --force-lagging-consumers: continuing anyway")
 
 
+def migration_impact() -> None:
+    """Informational: what a stored id means under this registry vs `stable`."""
+    step("migration impact (vs `stable`)")
+    try:
+        stable = remote_ref_sha("stable")
+        old = impact.parse(show(stable, "registry.json") or "")
+        new = impact.parse((REPO / "registry.json").read_text())
+    except Exception as exc:  # never blocks: the report is a reading aid
+        print(f"   could not compare with `stable`: {exc}")
+        return
+    print(f"   stable = {stable[:10]}")
+    for line in impact.report(impact.compute(old, new)):
+        print(f"   {line}")
+
+
+def override_support(consumer: Consumer) -> str | None:
+    """None when the consumer's installed adapter honours AI_MODEL_REGISTRY_FILE, else why not."""
+    if not consumer.root.exists():
+        return f"repo not found: {consumer.root}"
+    if not consumer.python_path.exists():
+        return f"python not found: {consumer.python}"
+    try:
+        result = subprocess.run(
+            [str(consumer.python_path), "-c", SUPPORTS_OVERRIDE],
+            cwd=consumer.test_dir, capture_output=True, text=True, timeout=60,
+        )
+    except Exception as exc:
+        return f"adapter check failed: {exc}"
+    if result.returncode == 3:
+        return f"adapter predates {OVERRIDE_ENV}"
+    if result.returncode != 0:
+        return "cannot import ai_model_registry: " + (result.stderr.strip().splitlines() or ["?"])[-1]
+    return None
+
+
+def run_contract_test(consumer: Consumer, registry_path: str) -> tuple[bool, str]:
+    """(passed, combined output) of the consumer's contract_test against `registry_path`."""
+    env = {**os.environ, OVERRIDE_ENV: registry_path}
+    try:
+        result = subprocess.run(
+            [str(consumer.python_path), *consumer.contract_test],
+            cwd=consumer.test_dir, env=env, capture_output=True, text=True,
+            timeout=CONTRACT_TIMEOUT_SECONDS,
+        )
+    except subprocess.TimeoutExpired:
+        return False, f"timed out after {CONTRACT_TIMEOUT_SECONDS}s"
+    except Exception as exc:
+        return False, str(exc)
+    return result.returncode == 0, (result.stdout + result.stderr).strip()
+
+
+def contract_gate(skip: bool) -> None:
+    """Run every consumer's contract_test against the candidate registry; any FAIL stops."""
+    step("consumer contract tests")
+    if not CONSUMERS_PATH.exists():
+        print("   consumers.json not found — no contract tests to run")
+        return
+    consumers = load_consumers()
+    untested = [c.name for c in consumers if not c.contract_test]
+    gated = [c for c in consumers if c.contract_test]
+    if untested:
+        print(f"   no contract test: {', '.join(untested)}")
+    if not gated:
+        return
+    if skip:
+        print(f"   --skip-contract-tests: not run for {', '.join(c.name for c in gated)}")
+        return
+    registry_path = str((REPO / "registry.json").resolve())
+    print(f"   {OVERRIDE_ENV}={registry_path}")
+    print("   each consumer's working tree and venv is what gets tested, not its committed pin")
+    failed = []
+    for consumer in gated:
+        why_not = override_support(consumer)
+        if why_not:
+            print(f"   -- {consumer.name}: not gated: {why_not}")
+            continue
+        passed, output = run_contract_test(consumer, registry_path)
+        print(f"   {'PASS' if passed else 'FAIL'} {consumer.name}")
+        if not passed:
+            failed.append(consumer.name)
+            print("\n".join("        " + line for line in output.splitlines()[-25:]))
+    if failed:
+        die(
+            f"contract test failed for {', '.join(failed)}: this registry breaks what they serve.\n"
+            "   Fix the registry change or the consumer (then deploy it) first,\n"
+            "   or pass --skip-contract-tests."
+        )
+
+
 def review(registry: dict, assume_yes: bool) -> None:
     step("deprecation review")
     active: dict[str, list[str]] = defaultdict(list)
@@ -215,12 +318,15 @@ def main() -> int:
     parser.add_argument("--yes", action="store_true", help="skip the deprecation-review prompt")
     parser.add_argument("--skip-watch", action="store_true", help="do not wait for the promote run")
     parser.add_argument("--force-lagging-consumers", action="store_true", help="promote even if a consumer cannot read it")
+    parser.add_argument("--skip-contract-tests", action="store_true", help="do not run the consumers' contract tests")
     args = parser.parse_args()
 
     version = preflight()
     checks()
     registry = json.loads((REPO / "registry.json").read_text())
+    migration_impact()
     consumer_gate(registry, args.force_lagging_consumers)
+    contract_gate(args.skip_contract_tests)
     review(registry, args.yes or args.dry_run)
     head = publish(version, args.dry_run, not args.skip_watch)
     if args.dry_run:

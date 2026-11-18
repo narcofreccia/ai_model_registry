@@ -23,6 +23,11 @@ STABLE_URL = (
 CACHE_FILENAME = "registry.json"
 FETCH_TIMEOUT_SECONDS = 5.0
 
+# Set to a registry.json path to make every load() read exactly that file:
+# no fetch, no cache read or write, no fallback. A release gate or a test uses
+# it to prove which data an app ran against.
+OVERRIDE_ENV = "AI_MODEL_REGISTRY_FILE"
+
 
 def load(
     snapshot_path: str | os.PathLike[str] | None = None,
@@ -38,7 +43,16 @@ def load(
 
     Never raises for a failed fetch or an unreadable file while another source
     remains; only a total failure of every source raises RuntimeError.
+
+    When the ``AI_MODEL_REGISTRY_FILE`` environment variable (:data:`OVERRIDE_ENV`)
+    is set to a non-empty path, that file is the only source, whatever the
+    arguments say, nothing is cached, and a missing or invalid file raises
+    RuntimeError instead of falling back.
     """
+    override = os.environ.get(OVERRIDE_ENV, "").strip()
+    if override:
+        return _load_override(Path(override))
+
     errors: list[str] = []
 
     if fetch:
@@ -98,6 +112,20 @@ def _write_cache(cache_dir: Path, payload: bytes, errors: list[str]) -> None:
         message = f"cache write {cache_dir}: {exc}"
         logger.warning("ai_model_registry: %s", message)
         errors.append(message)
+
+
+def _load_override(path: Path) -> Registry:
+    """The file named by OVERRIDE_ENV, or RuntimeError: never a silent fallback."""
+    try:
+        payload = path.read_bytes()
+    except Exception as exc:
+        raise RuntimeError(f"ai_model_registry: {OVERRIDE_ENV}={path}: cannot read: {exc}") from exc
+    try:
+        registry = Registry.model_validate(json.loads(payload))
+    except Exception as exc:
+        raise RuntimeError(f"ai_model_registry: {OVERRIDE_ENV}={path}: invalid registry: {exc}") from exc
+    logger.info("ai_model_registry: loaded %s from %s", path, OVERRIDE_ENV)
+    return registry
 
 
 def _load_file(path: Path, errors: list[str]) -> Registry | None:

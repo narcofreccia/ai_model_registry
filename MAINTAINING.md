@@ -106,6 +106,22 @@ pins adapter 0.4.0+.
 4. Removing an id entirely is only allowed with a migration entry left behind —
    `validate.py` diffs against `stable` and rejects a silent removal.
 
+The adapter reads a chain two ways:
+
+- `resolve_migration(id)` (and `resolve`, `get_price`, `price_for`) follows the chain to its
+  end, whatever the status of the hops: the **latest successor**.
+- `resolve_usable(id)` (and `usable`) is what an app should **call**: an active or
+  deprecated id comes back as given; a retired or unknown id steps along the chain and stops
+  at the first model that is not retired.
+
+So a status change that turns a model into a non-terminal hop (deprecating it adds its own
+migration) moves every older id that pointed at it: their full chain now ends at the new
+successor, and any consumer that resolves with `resolve_migration`, or prices with
+`get_price`, lands on a model it may have no setup for. That is how v0.5.3 broke three
+consumers that read `stable` at runtime. Before promoting such a change, read the
+**migration impact** step of `release.py --dry-run` and make sure every consumer can serve
+each new target (its contract test passes, below).
+
 ## Validate locally
 
 ```bash
@@ -138,13 +154,23 @@ In Claude Code, `/release-ai-registry` runs the whole thing, deprecation review 
    ```
 
    It checks, in order: on main, clean, not behind origin; versions agree; the tag is
-   unused; the CHANGELOG is dated; validate + pytest; **the release newly breaks no consumer
-   in `consumers.json`**: judged on each repo's *committed* pin, so an uncommitted bump
-   doesn't count, and repos that already can't read the current `stable` are listed
-   without blocking. Then it tags, pushes, runs
+   unused; the CHANGELOG is dated; validate + pytest. It prints the **migration impact**
+   against `stable` (status changes; ids an app would now *call* as another model; ids whose
+   full chain, and so `get_price`, moved). That report never blocks; read it. Then:
+   **the release newly breaks no consumer in `consumers.json`**: judged on each repo's
+   *committed* pin, so an uncommitted bump doesn't count, and repos that already can't read
+   the current `stable` are listed without blocking (`--force-lagging-consumers` overrides).
+   Then the **contract gate**: every consumer with a `contract_test` runs it from its own
+   working tree and venv with `AI_MODEL_REGISTRY_FILE` set to this `registry.json`; one
+   failure stops the release, dry run included (`--skip-contract-tests` skips the step, only
+   when the user accepts the risk). A consumer whose installed adapter predates
+   `AI_MODEL_REGISTRY_FILE` (0.6.0) is listed as not gated, as is one with no
+   `contract_test`. Then it tags, pushes, runs
    `gh workflow run ci.yml -f promote=true`, watches it, and checks that `stable` moved.
    The CI job re-validates before it force-moves the tag.
-5. Move the consumers to the new commit: `scripts/update_consumers.py` (below).
+5. Move the consumers to the new commit: `scripts/update_consumers.py --verify` (below) runs
+   each repo's `registry_test`, or its full `test` where none is defined; `--full` forces the
+   full suite.
 
 Consumers pinning a SHA (tide_share's desktop builds) are unaffected until they bump it.
 
@@ -152,15 +178,36 @@ Consumers pinning a SHA (tide_share's desktop builds) are unaffected until they 
 
 `consumers.json` (gitignored, machine-specific paths; shape in `consumers.example.json`)
 lists every repo that pins this package, with its pin files, vendored snapshot, venv
-python and test command.
+python and test command. Two optional fields, each run as `<python> <args...>` from
+`test_cwd` like `test`:
+
+- `contract_test`: a fast invariant test the release gate runs against the **candidate**
+  registry (below). A repo without one is not gated.
+- `registry_test`: a fast subset of the repo's suite covering its registry integration;
+  `update_consumers.py --verify` runs it instead of the full `test`.
+
+`AI_MODEL_REGISTRY_FILE=<path>` makes every `load()` (adapter 0.6.0+) read exactly that file:
+no fetch, no cache read or write, no fallback; a missing or invalid file raises. Use it to
+run any consumer against a candidate registry by hand.
 
 ```bash
-.venv/bin/python scripts/consumers.py status              # pin + adapter per repo; can it read `stable`?
+.venv/bin/python scripts/consumers.py status              # pin + adapter per repo; can it read `stable`? gated?
 .venv/bin/python scripts/consumers.py discover --write    # pick up repos that started pinning us
 .venv/bin/python scripts/update_consumers.py --dry-run    # pin -> commit `stable` points at
-.venv/bin/python scripts/update_consumers.py --verify     # ...rewrite, reinstall, run their tests
+.venv/bin/python scripts/update_consumers.py --verify     # ...rewrite, reinstall, run registry_test (else test)
+.venv/bin/python scripts/update_consumers.py --verify --full   # ...run the full `test` everywhere
+.venv/bin/python scripts/impact.py --old v0.5.4           # the release's impact report vs any ref
 ```
 
 `update_consumers.py` only edits files: the pin line(s) and, where one is vendored, the
 snapshot, which always moves with the pin. Committing and deploying each repo is manual.
 In Claude Code: `/update-ai-registry-consumers`.
+
+### Writing a consumer contract test
+
+The gate runs it against registries **newer than the app's pin**, so it asserts invariants,
+never counts, catalog order or "this exact list of models". For every model id the app has
+stored defaults for, or local per-model setup for (a mapping, a size table, a prompt),
+assert that `registry.resolve_usable(id)` lands on a model the app can serve, and that no
+default model is `retired`. Load the registry the way the app does (`load(...)`), so the
+override decides the data; keep it to seconds, with no network and no database.

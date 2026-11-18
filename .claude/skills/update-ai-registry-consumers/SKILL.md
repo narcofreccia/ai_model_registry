@@ -7,7 +7,8 @@ description: Bump the ai-model-registry pin (and vendored snapshot) in every lin
 
 The repos live in `consumers.json` (gitignored; shape in `consumers.example.json`).
 If it is missing, run `python3 scripts/consumers.py discover --write` and fill in each
-new entry's `snapshot` / `python` / `test` from that repo's `docs/ai_model_registry.md`.
+new entry's `snapshot` / `python` / `test` (and optional `contract_test` / `registry_test`)
+from that repo's `docs/ai_model_registry.md`.
 
 ## Steps
 
@@ -18,8 +19,9 @@ new entry's `snapshot` / `python` / `test` from that repo's `docs/ai_model_regis
    (it must be pushed); `--only a,b` narrows the run.
 3. `.venv/bin/python scripts/update_consumers.py --verify`: rewrites the pins, overwrites
    vendored snapshots with that commit's `registry.json` (pin and snapshot always move
-   together), force-reinstalls the pin into each repo's venv, and runs its tests. Large
-   suites take minutes, so run it in the background.
+   together), force-reinstalls the pin into each repo's venv, and runs its `registry_test`
+   (fast) or, where none is defined, its full `test`; the output says which ran. Add `--full`
+   for the whole suite (some take over an hour: run it in the background).
 4. For every failing repo, read the failure. If it comes from the registry change (a
    hard-coded model count, a model id that moved to `deprecated`, a catalog-order test),
    propose the fix and ask before editing that repo. Otherwise report it as pre-existing:

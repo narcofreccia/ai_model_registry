@@ -78,3 +78,41 @@ def test_committed_pins_ignore_uncommitted_edits(consumers, tmp_path):
     consumer = consumers.Consumer(name="t", path=str(tmp_path), pin_files=["requirements.txt"])
     assert consumers.consumer_pins(consumer) == {"requirements.txt": [NEW]}
     assert consumers.consumer_pins(consumer, committed=True) == {"requirements.txt": [OLD]}
+
+
+def test_new_optional_fields_parse(consumers, tmp_path):
+    path = tmp_path / "consumers.json"
+    path.write_text(
+        '{"consumers": ['
+        '{"name": "old", "path": "../old", "pin_files": ["requirements.txt"]},'
+        '{"name": "new", "path": "../new", "pin_files": ["requirements.txt"],'
+        ' "contract_test": ["-m", "pytest", "-q", "tests/test_contract.py"],'
+        ' "registry_test": ["-m", "pytest", "-q", "tests/test_registry.py"]}'
+        "]}"
+    )
+    old, new = consumers.load_consumers(path)
+    assert old.contract_test is None and old.registry_test is None
+    assert new.contract_test == ["-m", "pytest", "-q", "tests/test_contract.py"]
+    assert new.registry_test == ["-m", "pytest", "-q", "tests/test_registry.py"]
+
+
+def test_example_file_loads(consumers):
+    (example,) = consumers.load_consumers(REPO / "consumers.example.json")
+    assert example.contract_test and example.registry_test
+
+
+def test_verify_prefers_registry_test_unless_full(consumers):
+    plain = consumers.Consumer(name="a", path=".", pin_files=[])
+    fast = consumers.Consumer(name="b", path=".", pin_files=[], registry_test=["-m", "pytest", "tests/r.py"])
+    assert consumers.test_command(plain) == ("test", ["-m", "pytest", "-q"])
+    assert consumers.test_command(plain, full=True) == ("test", ["-m", "pytest", "-q"])
+    assert consumers.test_command(fast) == ("registry_test", ["-m", "pytest", "tests/r.py"])
+    assert consumers.test_command(fast, full=True) == ("test", ["-m", "pytest", "-q"])
+
+
+def test_gate_markers(consumers):
+    plain = consumers.Consumer(name="a", path=".", pin_files=[])
+    gated = consumers.Consumer(name="b", path=".", pin_files=[], contract_test=["x"], registry_test=["y"])
+    assert "not gated" in consumers.gate_markers(plain)
+    assert "full test" in consumers.gate_markers(plain)
+    assert consumers.gate_markers(gated) == "contract_test (gated), registry_test (fast verify)"

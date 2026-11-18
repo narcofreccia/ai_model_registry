@@ -2,6 +2,56 @@
 
 Dates are the promotion date (when `stable` was moved), not the merge date.
 
+## 2026-11-18 — resolve_usable, AI_MODEL_REGISTRY_FILE, migration impact report and consumer contract gate (v0.5.4 → v0.6.0, adapter + tooling, registry data unchanged)
+
+113 models (78 chat, 2 decision, 6 embedding, 14 image_gen, 13 realtime), 74 migrations, 7 providers.
+`registry.json` is byte-identical to v0.5.4. This release is the fix for how v0.5.3 broke
+consumers: deprecating `openai_gpt_image_2` made it a hop instead of a chain end, every retired
+image id resolved past it to 2.6 Sunburst, and three apps that read `stable` at runtime broke
+without a pin bump. The release script only checked that their adapters could parse the file.
+
+**Added (adapter)**
+- `Registry.resolve_usable(id)` and `Registry.usable(id)`: the id / model to call now. An
+  active or deprecated id comes back as given (alias included); a retired or unknown id steps
+  along `migrations` and stops at the first model that is not retired. Retired A → deprecated
+  B → active C gives B, where `resolve_migration` gives C. A retired model reached through an
+  alias with no migration of its own follows its canonical id's migration. This is the rule
+  each consumer had hand-written as `resolve_usable`; they can now call the adapter's.
+  `get`, `resolve`, `resolve_migration`, `get_price` and `price_for` are unchanged:
+  `get_price` still follows the full chain.
+- `AI_MODEL_REGISTRY_FILE` (exported as `ai_model_registry.OVERRIDE_ENV`): when set to a
+  non-empty path, `load()` reads exactly that file whatever its arguments say, writes no
+  cache and raises on a missing or invalid file instead of falling back.
+
+**Added (tooling)**
+- `scripts/impact.py` and a **migration impact** step in `release.py` (dry run included):
+  against `stable`, the models whose status changed, the stored ids an app would now call as
+  another model (`resolve_usable`), and the ids whose full chain moved (`resolve_migration`,
+  so `get_price`). Read through this repo's own `Registry`. Informational, never blocking.
+  Run on v0.5.4 → v0.5.3 it lists `gpt-image-1.5`, `openai/gpt-image-1.5`, `gpt-image-1`,
+  `dall-e-2` and `dall-e-3` moving to `openai_gpt_image_2_6_sunburst` on the full chain, while
+  their `resolve_usable` stays `openai_gpt_image_2`.
+- **Consumer contract gate** in `release.py`: each consumer with a `contract_test` in
+  `consumers.json` runs it from its working tree and venv with `AI_MODEL_REGISTRY_FILE` set to
+  the candidate `registry.json`. Any failure stops the release, dry run included, unless
+  `--skip-contract-tests`. Consumers with no contract test, or whose adapter predates the
+  override, are listed as not gated.
+- `consumers.json` fields `contract_test` and `registry_test` (both optional, shape in
+  `consumers.example.json`). `update_consumers.py --verify` now runs `registry_test` when a
+  repo has one and its full `test` otherwise; `--full` forces the full suite. `consumers.py
+  status` shows both per repo.
+
+**Docs**
+- MAINTAINING.md: the two resolution rules, why a status change that makes an id a hop needs
+  the impact report read first, the contract gate, and how to write a consumer contract test
+  (invariants only: no counts, no catalog order).
+
+TODO (carried from v0.5.4): deprecate `openai_gpt_image_2` (migration →
+`openai_gpt_image_2_6_sunburst`) before 2027-02-10, once every consumer with image setup
+(tide_backend, ndr_backend, ndr_backend_ai_assistant) has a 2.6 Sunburst mapping, a
+`contract_test` in `consumers.json`, an adapter ≥ 0.6.0, and passes the contract gate in
+`release.py --dry-run` with the deprecation applied.
+
 ## 2026-11-18 — gpt-image-2 back to active, gpt-4o-mini-realtime-preview migrates to the mini tier (v0.5.3 → v0.5.4, facts only, no schema change)
 
 113 models (78 chat, 2 decision, 6 embedding, 14 image_gen, 13 realtime), 74 migrations, 7 providers.

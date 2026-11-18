@@ -23,7 +23,9 @@ before it. Rules for editing `registry.json` live in MAINTAINING.md; follow them
    shut down → `retired`. Either way add a `migrations` entry to the provider's named
    replacement; add that replacement first if it is missing, priced only from the provider
    page, else `pricing: null` + a CHANGELOG TODO. "Legacy" or "superseded" without a
-   deprecation notice is a CHANGELOG note, not a status change.
+   deprecation notice is a CHANGELOG note, not a status change. Deprecating a model that
+   older ids migrate to moves their full chain on to its successor: check the impact report
+   (step 3) and tell the user which consumers must serve the new target first.
 4. Apply the edits, then run `.venv/bin/python scripts/validate.py` and `.venv/bin/python -m pytest`.
    `tests/test_accessors.py` pins the active chat order and the per-kind counts, so update it with the change.
 
@@ -42,6 +44,10 @@ before it. Rules for editing `registry.json` live in MAINTAINING.md; follow them
 .venv/bin/python scripts/release.py --yes       # after the user confirms; --yes = review done
 ```
 
+It prints a **migration impact** report against `stable` (status changes, ids now called as
+another model, ids whose full chain / `get_price` moved). It never blocks; show it to the user
+and read every line before promoting.
+
 It stops on any of the following. Fix the cause; don't work around it:
 - not on main, a dirty tree, or behind origin
 - the two version strings disagree
@@ -54,6 +60,11 @@ It stops on any of the following. Fix the cause; don't work around it:
   and deploy them. Pass `--force-lagging-consumers` only if the user explicitly accepts
   that they fall back to stale data. Consumers that already can't read the current `stable`
   are listed, not blocking: tell the user, since they need a bump + deploy either way.
+- **a consumer contract test fails** against this registry (run from that repo's working
+  tree with `AI_MODEL_REGISTRY_FILE`; dry run included). Fix the registry change or the
+  consumer, and have the user deploy it. `--skip-contract-tests` only if the user explicitly
+  accepts the risk. "No contract test" and "adapter predates AI_MODEL_REGISTRY_FILE" are
+  listed, not blocking: those consumers are not gated, so say so.
 
 Pushing and promoting are outward-facing: always show the dry-run output and get a yes first.
 
