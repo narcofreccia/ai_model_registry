@@ -2,6 +2,48 @@
 
 Dates are the promotion date (when `stable` was moved), not the merge date.
 
+## 2026-11-21 — Gemini 4 Neon (v0.6.1 → v0.6.2, facts only, no schema change)
+
+114 models (79 chat, 2 decision, 6 embedding, 14 image_gen, 13 realtime), 74 migrations, 7 providers.
+Read 2026-11-21 (ai.google.dev redirects to aistudio.google.com/docs): /models,
+/models/gemini-4-neon, /whats-new-gemini-4-neon, /pricing, /thinking, /changelog, /deprecations.
+
+**Added**
+- `gemini-4-neon` (chat, GA 2026-11-18, paid tier only): 3.00 in / 15.00 out / 0.15 cached per 1M
+  from Google's pricing page, `effective_from` 2026-11-18, no scheduled change published.
+  1,048,576-token window, 65,536 default output; thinking_level low/medium/high/xhigh (default
+  high, `minimal` rejected); in-range temperature/top_p/top_k ignored, out-of-range a 400, so
+  `allows_temperature` false. `reasoning` is `google_budget` like the rest of the family: the
+  vocabulary has no value for thinking levels yet, so each consumer still picks the config shape.
+
+**Checked, unchanged**
+- No Google status change since v0.5.3: the deprecations page lists no shutdown date for any
+  active Google id in the registry.
+- Voice (realtime) models, read the same day: `gemini-3.8-live` and
+  `gemini-3.8-live-extended-thinking` are current (audio 3.00 in / 12.00 out, no shutdown date);
+  nothing newer is in Google's Live list. OpenAI's `gpt-realtime-2.1`, `gpt-realtime-2.1-mini`
+  and `gpt-audio-1.5` are current with no shutdown date.
+- OpenAI and Anthropic deprecations pages: no new entry for an active id. `openai_gpt_image_2`
+  stays active on purpose (v0.5.4), although OpenAI lists a 2027-02-10 shutdown.
+
+**Coming up (not applied, the dates have not arrived)**
+- 2026-12-01: `gemini-4-argon` and `gemini-4-carbon` go to 4.00 / 20.00 / 0.20. The rate is
+  already in each model's `from_2026-12-01` variant; on that day move it to the base rate.
+- 2027-01-01: `gemini-3.8-flash` and `gemini-3.6-flash` go to 1.50 / 7.50 / 0.15.
+
+**Not added**
+- `gemini-decision-1` (Decisions API, 2026-11-11): fits `kind: "decision"`, but its price was read
+  only from a summary of the pricing page (0.10 in per 1M) and the rubric question type string is
+  not documented. TODO: read the price page and the Decisions API reference, then add it.
+- Google's new TTS, transcription, video (`gemini-omni-1.2-flash`) and world (`genie-4`) models
+  have no kind in the schema.
+- Voice models that do not fit the realtime shape yet: `gemini-3.5-live-translate-preview`
+  (speech-to-speech translation, no text rates published) and OpenAI's `gpt-live-1.1`,
+  `gpt-realtime-translate`, `gpt-live-transcribe` (billed per minute, not per token). TODO: decide
+  whether the realtime pricing shape should take per-minute rates.
+- `gemini-live-2.5-flash-native-audio` (active here) is on none of the Gemini Developer API pages
+  read today. TODO: confirm where the id is served before changing its status.
+
 ## 2026-11-18 — Qwen4 Max priced from OpenRouter's Alibaba endpoint (v0.6.0 → v0.6.1, facts only, no schema change)
 
 113 models (78 chat, 2 decision, 6 embedding, 14 image_gen, 13 realtime), 74 migrations, 7 providers.

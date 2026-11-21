@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "schema_minor": 3,
-  "generated_at": "2026-11-18T21:30:00Z",
+  "generated_at": "2026-11-21T07:30:00Z",
   "providers": {
     "anthropic": {
       "name": "Anthropic",
@@ -1185,6 +1185,30 @@
         "input_per_1m": 0.37,
         "output_per_1m": 1.25,
         "cached_input_per_1m": 0.075
+      }
+    },
+    {
+      "id": "gemini-4-neon",
+      "name": "Gemini 4 Neon",
+      "description": "Gemini 4 model for high-frequency complex tasks in software engineering, knowledge work and science; Google places it between Hydrogen and Carbon (GA 2026-11-18, not on the free tier). One 1,048,576-token window shared by input, thinking and output; default max_output_tokens 65,536 (up to 1,048,576 with long decode). thinking_level low/medium/high/xhigh (default high; minimal is rejected). temperature/top_p/top_k: in-range values are ignored and out-of-range values are an HTTP 400, so do not send them. Implicit caching only (prompts of 4,096+ tokens); explicit cachedContents unsupported. Text/image/video/audio/PDF in, text out; Grounding with Google Search supported. No scheduled price change published.",
+      "provider": "google",
+      "kind": "chat",
+      "api_model_id": "gemini-4-neon",
+      "aliases": [],
+      "reasoning": "google_budget",
+      "allows_temperature": false,
+      "responses_api": false,
+      "server_web_tools": false,
+      "vision": true,
+      "needs_pdf_rasterization": false,
+      "max_reference_images": null,
+      "voices": null,
+      "status": "active",
+      "pricing": {
+        "input_per_1m": 3.0,
+        "output_per_1m": 15.0,
+        "cached_input_per_1m": 0.15,
+        "effective_from": "2026-11-18"
       }
     },
     {

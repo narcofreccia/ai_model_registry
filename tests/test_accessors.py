@@ -46,6 +46,7 @@ TIDE_SHARE_CHAT_ORDER = [
     "meta/muse-ember",
     "glm-5.3-flashx",
     "z-ai/glm-5.3-flashx",
+    "gemini-4-neon",
 ]
 
 
